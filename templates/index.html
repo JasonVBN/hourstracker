@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hours Tracker</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Admins:</h2>
+        {% if not user %}
+            <a class="btn" href="/login">Log in / Register</a>
+        {% else %}
+            <p>Logged in as: {{ user['email'] }}</p>
+            <a class="btn" href="/profile">Profile</a>
+            <a class="btn" href="/logout">Logout</a>
+
+            
+            {% if user['status'] == 'approved' %}
+                <h3>Approved admins:</h3>
+                {% for u in allusers | selectattr('status','equalto','approved') %}
+                    <p>{{ u['name'] }} ({{ u['email'] }})</p>
+                {% endfor %}
+
+                <h3>Pending requests:</h3>
+                {% for u in allusers | selectattr('status','equalto','pending') %}
+                    <li>
+                        {{ u['name'] }} ({{ u['email'] }})
+                        <a class="btn" style="background-color: #60e542;" 
+                            href="/accept/{{ u['id'] }}">accept</a>
+                        <a class="btn" style="background-color: #ff7a7a;" 
+                            href="/deny/{{ u['id'] }}">deny</a>
+                    </li>
+                {% endfor %}
+
+                <a class="btn" href="/events">Events</a>
+                <a class="btn" href="/entries/pending">Pending entries</a>
+            {% elif user['status'] == 'pending' %}
+                <p>Waiting for admin approval</p>
+            {% else %}
+                <p>Your admin request was denied</p>
+                <a class="btn" href="/askname">Request to join admins again</a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <h2>Members:</h2>
+        <form action="/entry" method="post">
+            <h3>Submit attendance</h3>
+            <select name="event_id" required>
+                {% for e in events %}
+                    <option value="{{ e['id'] }}">
+                        {{ e['name'] }} 
+                        {% if e['date'] %} ({{ e['date']}}) {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="text" name="name" placeholder="your name" required>
+            <input type="text" name="sid" placeholder="your student ID" maxlength=10 required>
+            make sure your ID is correct, or else your hours might not be logged!
+            <button type="submit">Submit</button>
+        </form>
+
+        <form action="/query" method="post">
+            <h3>How many hours do I have??</h3>
+            <input type="text" name="name" placeholder="your name" required>
+            <input type="text" name="sid" placeholder="your student ID" maxlength=10 required>
+            <button type="submit">Submit</button>
+            {% if totals %}
+                <p>Approved hours: {{totals['approved']}}</p>
+                {% for row in queryresults %}
+                    <p>{{ row['name'] }} ({{ row['hours'] }} hours) - {{ row['status'] }}</p>
+                {% endfor %}
+            {% endif %}
+            
+        </form>
+    </div>
+</body>
+</html>

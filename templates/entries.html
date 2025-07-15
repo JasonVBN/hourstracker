@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending entries</title>
+    <link rel="stylesheet" href="/static/index.css">
+    <style>
+        table {
+            width: 90%;
+            margin: 40px auto;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+        }
+        th {
+            background: #2563eb;
+            color: #fff;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background: #f6f8fa;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>Name (student ID)</th>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Hours</th>
+            <th>Decision</th>
+        </tr>
+        {% for entry in entries %}
+            <tr>
+                <td>{{entry['name']}} ({{entry['sid']}})</td>
+                <td>{{ entry['event_name'] }}</td>
+                <td>{{ entry['date'] }}</td>
+                <td>{{ entry['hours'] }}</td>
+                <td>
+                    <a class="btn" style="background-color: #60e542;" 
+                        href="/entries/approve/{{ entry['id'] }}">approve</a>
+                    <a class="btn" style="background-color: #ff7a7a;" 
+                        href="/entries/deny/{{ entry['id'] }}">deny</a>
+                </td>
+            </tr>
+        {% endfor %}
+        {% if not entries %}
+            <tr>
+                <td colspan="5">No pending entries.</td>
+            </tr>
+        {% endif %}
+    </table>
+</body>
+</html>

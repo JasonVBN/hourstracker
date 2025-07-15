@@ -1,0 +1,5 @@
+flask
+authlib
+requests
+mysql-connector-python
+dotenv

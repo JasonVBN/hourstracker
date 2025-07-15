@@ -1,0 +1,119 @@
+import mysql.connector
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+config = {
+    'host': '73.76.61.0',
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASS'),
+    'database': 'HoursTracker',
+    'port': 3306
+}
+
+'''
+status options: enum('denied','pending','approved')
+'''
+
+def runquery(query: str, params=None) -> list:
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(query, params)
+    print(f"[db/runquery] Executed query: {query} with params: {params}")
+    
+    result = None
+    if cursor.with_rows:
+        result = cursor.fetchall()
+        print(f"[db/runquery] Retrieved: {result}")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return result
+
+def addevent(name, hours=0, date=None, desc=None):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO events"
+                   "(name, hours, date, `desc`)"
+                   "VALUES (%s, %s, %s, %s)",
+                    (name, hours, date, desc))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def getallevents():
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM events")
+    events = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    print(f"[db/getallevents] Events fetched: {events}")
+    return events
+
+def updatestatus(id: int, status: str):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE admins SET status = %s WHERE id = %s", (status, id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print(f"[db/updatestatus] Updated {id} to status {status}")
+
+def getallusers():
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM admins")
+    users = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    print(f"[db/getallusers] Users fetched: {users}")
+    return users
+
+def getuserinfo(email: str):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM admins WHERE email = %s", (email,))
+    info = cursor.fetchone()
+    # if info is None:
+    #     print(f"[db/getuserinfo] User is new, adding...")
+    #     cursor.execute("INSERT INTO admins (email, name, approved) VALUES (%s, %s, %s)",
+    #                    (email, email.split('@')[0], False))
+    #     conn.commit()
+    #     return {
+    #         'email': email,
+    #         'name': email.split('@')[0],
+    #         'approved': False
+    #     }
+    cursor.close()
+    conn.close()
+
+    print(f"[db/getuserinfo] User fetched: {info}")
+    return info
+
+def addnewadmin(email: str, name: str):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO admins (email, name, status) VALUES (%s, %s, %s)",
+                       (email, name, 'pending'))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def seetables():
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    cursor.execute("SHOW TABLES;")
+    for table in cursor.fetchall():
+        print(table)
+
+if __name__ == '__main__':
+    seetables()

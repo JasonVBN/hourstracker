@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events</title>
+    <link rel="stylesheet" href="/static/index.css">
+
+    <style>
+        label:has(input[required])::before {
+            content: " *";
+            color: red;
+            font-weight: bold;
+        }
+        .event-tile {
+            display: block;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 18px 22px;
+            margin: 16px 0;
+            cursor: pointer;
+            border: 1.5px solid #e5e7eb;
+            transition: box-shadow 0.2s, border 0.2s;
+        }
+        .event-tile:hover {
+            box-shadow: 0 4px 18px rgba(37,99,235,0.13);
+            border: 1.5px solid #2563eb;
+        }
+        .popup-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 1000;
+            display: none;
+        }
+        .popup-bg.active {
+            display: block;
+        }
+        .popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 32px 28px 24px 28px;
+            z-index: 1001;
+            min-width: 320px;
+            max-width: 90vw;
+            display: none;
+        }
+        .popup.active {
+            display: block;
+        }
+        .popup-close {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #888;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        // Build eventsData as a JS object using Jinja2 inside a <script> tag
+        var eventsData = {};
+        {% for event in events %}
+        eventsData["{{ event['id']|e }}"] = {
+            name: {{ event['name']|e|tojson }},
+            hours: {{ event['hours']|e|tojson }},
+            date: {{ event['date']|e|tojson }},
+            desc: {{ event['desc']|e|tojson }},
+            proof: {{ 'true' if event.get('proof') else 'false' }}
+        };
+        {% endfor %}
+        function openPopup(eventId) {
+            document.getElementById('popup-bg').classList.add('active');
+            document.getElementById('popup').classList.add('active');
+            // Prefill form fields
+            var event = eventsData[eventId];
+            if (event) {
+                document.querySelector('#popup input[name="event_name"]').value = event.name || '';
+                document.querySelector('#popup input[name="event_hours"]').value = event.hours || '';
+                document.querySelector('#popup input[name="event_date"]').value = event.date || '';
+                document.querySelector('#popup textarea[name="event_desc"]').value = event.desc || '';
+                document.querySelector('#popup input[name="event_proof"]').checked = !!event.proof;
+            }
+        }
+        function closePopup() {
+            document.getElementById('popup-bg').classList.remove('active');
+            document.getElementById('popup').classList.remove('active');
+        }
+        window.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.event-tile').forEach(function(tile) {
+                tile.addEventListener('click', function() {
+                    openPopup(this.dataset.eventId);
+                });
+            });
+            document.getElementById('popup-bg').addEventListener('click', closePopup);
+            document.getElementById('popup-close').addEventListener('click', closePopup);
+        });
+    </script>
+</head>
+<body>
+    <div id="popup-bg" class="popup-bg"></div>
+    <div id="popup" class="popup">
+        <button id="popup-close" class="popup-close" type="button">&times;</button>
+        <h2>Edit Event (not working yet lol)</h2>
+        <form>
+            <!-- Add your popup form fields here -->
+            <label>Name:
+            <input type="text" name="event_name" placeholder="Event Name" required>
+            </label>
+
+            <label># of hours (leave blank or 0 for varying):
+            <input type="number" name="event_hours" step="0.25" placeholder="hours">
+            </label>
+
+            <label>Date:
+            <input type="date" name="event_date">
+            </label>
+
+            <label>Description: (optional)</label>
+            <textarea name="event_desc" rows="2" placeholder="description"></textarea>
+            
+            <label>
+            <input type="checkbox" name="event_proof"> Need proof
+            </label>
+            <button type="submit" class="btn">Save</button>
+        </form>
+    </div>
+    <div>
+        <h2>Events:</h2>
+        {% if events %}
+            <!-- <ul style="list-style:none; padding:0;"> -->
+            {% for event in events %}
+                <div class="event-tile" data-event-id="{{ event['id'] }}">
+                    <strong>{{ event['name'] }}</strong> - {{ event['date'] }} 
+                    ({{ event['hours'] }} hrs)
+                </div>
+            {% endfor %}
+            <!-- </ul> -->
+        {% else %}
+            <p>No events available.</p>
+        {% endif %}
+    </div>
+        
+    <form action="/events/new" method="post">
+        <h2>Create new event:</h2>
+        <label>Name:
+        <input type="text" name="event_name" placeholder="Event Name" required>
+        </label>
+
+        <label># of hours (leave blank or 0 for varying):
+        <input type="number" name="event_hours" step="0.25" placeholder="hours">
+        </label>
+
+        <label>Date:
+        <input type="date" name="event_date">
+        </label>
+
+        <label>Description: (optional)</label>
+        <textarea name="event_desc" rows="2" placeholder="description"></textarea>
+        
+        <label>
+        <input type="checkbox" name="event_proof"> Need proof
+        </label>
+
+        <button type="submit">Create new event</button>
+    </form>
+</body>
+</html>
