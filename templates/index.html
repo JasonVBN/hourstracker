@@ -70,9 +70,21 @@
             <button type="submit">Submit</button>
             {% if totals %}
                 <p>Approved hours: {{totals['approved']}}</p>
-                {% for row in queryresults %}
-                    <p>{{ row['name'] }} ({{ row['hours'] }} hours) - {{ row['status'] }}</p>
-                {% endfor %}
+                <table>
+                    <tr>
+                        <th>Event</th>
+                        <th>Hours</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for row in queryresults %}
+                        <tr>
+                            <td>{{ row['name'] }}</td>
+                            <td>{{ row['hours'] }} hours</td>
+                            <td>{{ row['status'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                
             {% endif %}
             
         </form>

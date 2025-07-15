@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <form action="/entry" method="post">
+        <h2>Submit attendance</h2>
+        <!-- <h3>{{event['name']}}</h3> -->
+        <select name="event_id" required>
+            <option value="{{ event['id'] }}">
+                {{ event['name'] }} 
+                {% if event['date'] %} ({{ event['date']}}) {% endif %}
+            </option>
+        </select>
+        <input type="text" name="name" placeholder="your name" required>
+        <input type="text" name="sid" placeholder="your student ID" maxlength=10 required>
+        make sure your ID is correct, or else your hours might not be logged!
+        <button type="submit" id="submit-btn">Submit</button>
+    </form>
+    <script>
+        document.getElementById('submit-btn').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    </script>
+</body>
+</html>

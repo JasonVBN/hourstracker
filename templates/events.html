@@ -102,6 +102,18 @@
             document.getElementById('popup-bg').addEventListener('click', closePopup);
             document.getElementById('popup-close').addEventListener('click', closePopup);
         });
+
+        function showqr(event, eventId) {
+            if (event) event.stopPropagation();
+            // This function should redirect to the QR code generation endpoint
+            // window.location.href = '/events/qr/1';
+            fetch('/events/qr/' + eventId) // relative route
+            .then(response => response.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            });
+        }
     </script>
 </head>
 <body>
@@ -140,6 +152,8 @@
                 <div class="event-tile" data-event-id="{{ event['id'] }}">
                     <strong>{{ event['name'] }}</strong> - {{ event['date'] }} 
                     ({{ event['hours'] }} hrs)
+
+                    <button class="getqr-btn" onclick="showqr(event, {{event['id']}})" style="float:right;">Check-in QR code</button>
                 </div>
             {% endfor %}
             <!-- </ul> -->

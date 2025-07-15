@@ -4,7 +4,7 @@ import os
 load_dotenv()
 
 config = {
-    'host': '73.76.61.0',
+    'host': '10.1.10.57',
     'user': os.getenv('DB_USER'),
     'password': os.getenv('DB_PASS'),
     'database': 'HoursTracker',
@@ -29,6 +29,9 @@ def runquery(query: str, params=None) -> list:
     cursor.close()
     conn.close()
     return result
+
+def geteventbyid(event_id: int):
+    return runquery("SELECT * FROM events WHERE id = %s", (event_id,))[0]
 
 def addevent(name, hours=0, date=None, desc=None):
     conn = mysql.connector.connect(**config)

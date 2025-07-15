@@ -1,8 +1,10 @@
-from flask import Flask, render_template, redirect, url_for, session, request
+from flask import Flask, render_template, redirect, url_for, session, request, send_file
 from authlib.integrations.flask_client import OAuth
 from db import *
+from qr import *
 import jwt
 import requests
+import io
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -29,6 +31,13 @@ def index():
                            user=session.get('userinfo'),
                            allusers=getallusers(),
                            events=getallevents()
+    )
+
+# visited only via QR code
+@app.route('/checkin/<int:event_id>')
+def checkin(event_id):
+    return render_template('checkin.html',
+                            event=geteventbyid(event_id),
     )
 
 @app.route('/entry', methods=['POST'])
@@ -103,6 +112,16 @@ def new_event():
     addevent(name, hours, date, desc)
     return redirect('/events')
 
+@app.route('/events/qr/<int:event_id>')
+def getqr(event_id: int):
+    # return 'hello'
+    img = make_qr(f"https://jason.symbolstrade.com:5000/checkin/{event_id}")
+
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png',)
+
 @app.route('/accept/<int:id>')
 def accept(id: int):
     print(f"[app/accept] Accepting admin request for ID: {id}")
@@ -161,15 +180,17 @@ def logout():
     session.clear()
     logout_url = ( "https://us-east-2qYsEPt2KR.auth.us-east-2.amazoncognito.com/logout"
     f"?client_id={CLIENT_ID}"
-    "&logout_uri=http://localhost:5001/" )
+    f"&logout_uri={os.getenv('INDEX_URL')}" )
 
     return redirect(logout_url)
 
 if __name__ == '__main__':
-    app.run(port=5001, 
+    app.run(port=5000, 
             host='0.0.0.0',
             debug=True,
             # ssl_context='adhoc',
             # ssl_context=('C:\\Users\\JasonN\\.ssh\\fullchain.pem', 
             #              'C:\\Users\\JasonN\\.ssh\\privkey.pem')
+            ssl_context=('/etc/letsencrypt/live/symbolstrade.com-0001/fullchain.pem', 
+                    '/etc/letsencrypt/live/symbolstrade.com-0001/privkey.pem')
             )
