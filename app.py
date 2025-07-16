@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, session, request, s
 from authlib.integrations.flask_client import OAuth
 from db import *
 from qr import *
+from emailer import send_email
 import jwt
 import requests
 import io
@@ -47,6 +48,11 @@ def adminrequest():
 @app.route('/admin/kick/<int:id>')
 def kick(id: int):
     runquery("UPDATE admins SET status = 'denied' WHERE id = %s", (id,))
+    email = runquery("SELECT email FROM admins WHERE id = %s", (id,))[0]['email']
+    send_email(email,
+        "you've been kicked",
+        """you've been kicked from the admin list
+        (this is an automated message, but you can still reply)""")
     return redirect('/')
 
 @app.route('/entry', methods=['POST'])
@@ -131,10 +137,28 @@ def getqr(event_id: int):
     buf.seek(0)
     return send_file(buf, mimetype='image/png',)
 
-@app.route('/accept/<int:id>')
+@app.route('/admin/accept/<int:id>')
 def accept(id: int):
     print(f"[app/accept] Accepting admin request for ID: {id}")
     updatestatus(id, 'approved')
+
+    email = runquery("SELECT email FROM admins WHERE id = %s", (id,))[0]['email']
+    send_email(email,
+        "you've been approved",
+        """you've been approved as an admin!
+        (this is an automated message, but you can still reply)""")
+    return redirect('/')
+
+@app.route('/admin/deny/<int:id>')
+def deny(id: int):
+    print(f"[app/accept] Denying admin request for ID: {id}")
+    updatestatus(id, 'denied')
+
+    email = runquery("SELECT email FROM admins WHERE id = %s", (id,))[0]['email']
+    send_email(email,
+        "you've been denied",
+        """you've been denied from admin role :(
+        (this is an automated message, but you can still reply)""")
     return redirect('/')
 
 @app.route('/admin/request/submit', methods=['POST'])
