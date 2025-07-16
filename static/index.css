@@ -51,7 +51,7 @@ button, input[type="submit"], a.btn {
     text-align: center;
     display: inline-block;
     text-decoration: none;
-    min-width: 100px;
+    min-width: 80px;
 }
 button:hover, input[type="submit"]:hover, a.btn:hover, a.btn:focus {
     background: #1d4ed8;
@@ -65,4 +65,10 @@ label {
     font-size: 0.98rem;
     color: #333;
     margin-bottom: 4px;
+}
+a.btn.green{
+    background: #60e542;
+}
+a.btn.communist{
+    background-color: #ff7a7a;
 }

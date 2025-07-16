@@ -20,16 +20,19 @@
             {% if user['status'] == 'approved' %}
                 <h3>Approved admins:</h3>
                 {% for u in allusers | selectattr('status','equalto','approved') %}
-                    <p>{{ u['name'] }} ({{ u['email'] }})</p>
+                    
+                    <p>{{ u['name'] }} ({{ u['email'] }})
+                    <a class="btn communist" href="/admin/kick/{{ u['id'] }}">Kick</a>
+                    </p>
                 {% endfor %}
 
                 <h3>Pending requests:</h3>
                 {% for u in allusers | selectattr('status','equalto','pending') %}
                     <li>
                         {{ u['name'] }} ({{ u['email'] }})
-                        <a class="btn" style="background-color: #60e542;" 
+                        <a class="btn green" 
                             href="/accept/{{ u['id'] }}">accept</a>
-                        <a class="btn" style="background-color: #ff7a7a;" 
+                        <a class="btn communist" 
                             href="/deny/{{ u['id'] }}">deny</a>
                     </li>
                 {% endfor %}
@@ -40,7 +43,7 @@
                 <p>Waiting for admin approval</p>
             {% else %}
                 <p>Your admin request was denied</p>
-                <a class="btn" href="/askname">Request to join admins again</a>
+                <a class="btn" href="/admin/request">Request to join admins again</a>
             {% endif %}
         {% endif %}
     </div>

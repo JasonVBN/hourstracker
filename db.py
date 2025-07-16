@@ -104,7 +104,10 @@ def getuserinfo(email: str):
 def addnewadmin(email: str, name: str):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO admins (email, name, status) VALUES (%s, %s, %s)",
+    cursor.execute("""INSERT INTO admins (email, name, status) 
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE 
+                    name=VALUES(name), status = 'pending';""",
                        (email, name, 'pending'))
     conn.commit()
     cursor.close()

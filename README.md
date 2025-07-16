@@ -1,6 +1,6 @@
 
 **TODO:**
-- ability to kick admins
+- DONE! ability to kick admins
 - show URL along with QR
 - profile with bio (just for fun)
 - document submission

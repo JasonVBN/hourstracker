@@ -40,6 +40,15 @@ def checkin(event_id):
                             event=geteventbyid(event_id),
     )
 
+@app.route('/admin/request')
+def adminrequest():
+    return render_template('askname.html')
+
+@app.route('/admin/kick/<int:id>')
+def kick(id: int):
+    runquery("UPDATE admins SET status = 'denied' WHERE id = %s", (id,))
+    return redirect('/')
+
 @app.route('/entry', methods=['POST'])
 def entry():
     event_id = request.form.get('event_id')
@@ -128,8 +137,8 @@ def accept(id: int):
     updatestatus(id, 'approved')
     return redirect('/')
 
-@app.route('/adminrequest', methods=['POST'])
-def adminrequest():
+@app.route('/admin/request/submit', methods=['POST'])
+def adminrequestsubmit():
     name = request.form.get('name')
     sid = request.form.get('sid')
 
@@ -171,7 +180,7 @@ def authorize():
     print(session['userinfo'])
 
     if session['userinfo'] is None:
-        return render_template('askname.html')
+        return redirect('/admin/request')
     else:
         return redirect('/')
 
