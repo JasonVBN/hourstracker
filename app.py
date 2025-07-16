@@ -120,11 +120,13 @@ def events():
 @app.route('/events/new', methods=['POST'])
 def new_event():
     name = request.form.get('event_name')
-    hours = int(request.form.get('event_hours'))
-    date = request.form.get('event_date') or None
-    desc = request.form.get('event_desc') or None
+    hours = int(request.form.get('hours') or 0)
+    date = request.form.get('date') or None
+    desc = request.form.get('desc') or None
+    needproof = request.form.get('needproof')
+    print(needproof)
 
-    addevent(name, hours, date, desc)
+    addevent(name, hours, date, desc, needproof)
     return redirect('/events')
 
 @app.route('/events/qr/<int:event_id>')

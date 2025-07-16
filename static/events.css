@@ -1,0 +1,20 @@
+label:has(input[required])::before {
+    content: " *";
+    color: red;
+    font-weight: bold;
+}
+.event-tile {
+    display: block;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 18px 22px;
+    margin: 16px 0;
+    cursor: pointer;
+    border: 1.5px solid #e5e7eb;
+    transition: box-shadow 0.2s, border 0.2s;
+}
+.event-tile:hover {
+    box-shadow: 0 4px 18px rgba(37,99,235,0.13);
+    border: 1.5px solid #2563eb;
+}

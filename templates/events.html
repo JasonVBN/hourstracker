@@ -5,28 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events</title>
     <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="/static/events.css">
 
     <style>
-        label:has(input[required])::before {
-            content: " *";
-            color: red;
-            font-weight: bold;
-        }
-        .event-tile {
-            display: block;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            padding: 18px 22px;
-            margin: 16px 0;
-            cursor: pointer;
-            border: 1.5px solid #e5e7eb;
-            transition: box-shadow 0.2s, border 0.2s;
-        }
-        .event-tile:hover {
-            box-shadow: 0 4px 18px rgba(37,99,235,0.13);
-            border: 1.5px solid #2563eb;
-        }
         .popup-bg {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -162,25 +143,25 @@
         {% endif %}
     </div>
         
-    <form action="/events/new" method="post">
+    <form action="/events/new" method="post" hidden>
         <h2>Create new event:</h2>
         <label>Name:
         <input type="text" name="event_name" placeholder="Event Name" required>
         </label>
 
         <label># of hours (leave blank or 0 for varying):
-        <input type="number" name="event_hours" step="0.25" placeholder="hours">
+        <input type="number" name="hours" step="0.25" placeholder="hours">
         </label>
 
         <label>Date:
-        <input type="date" name="event_date">
+        <input type="date" name="date">
         </label>
 
         <label>Description: (optional)</label>
-        <textarea name="event_desc" rows="2" placeholder="description"></textarea>
+        <textarea name="desc" rows="2" placeholder="description"></textarea>
         
         <label>
-        <input type="checkbox" name="event_proof"> Need proof
+        <input type="checkbox" name="needproof" value=1> Need proof
         </label>
 
         <button type="submit">Create new event</button>
