@@ -42,6 +42,7 @@
             <th>Event</th>
             <th>Date</th>
             <th>Hours</th>
+            <th>Doc</th>
             <th>Decision</th>
         </tr>
         {% for entry in entries %}
@@ -50,6 +51,11 @@
                 <td>{{ entry['event_name'] }}</td>
                 <td>{{ entry['date'] }}</td>
                 <td>{{ entry['hours'] }}</td>
+                <td>
+                    {% if entry['proof'] %}
+                        <a href="/entry/proof/{{entry['id']}}" target="_blank">See document</a>
+                    {% endif %}
+                </td>
                 <td>
                     <a class="btn" style="background-color: #60e542;" 
                         href="/entries/approve/{{ entry['id'] }}">approve</a>

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, redirect, url_for, session, request, send_file
+from flask import (Flask, render_template, redirect, url_for, 
+                   session, request, send_file, make_response)
 from authlib.integrations.flask_client import OAuth
 from db import *
 from qr import *
@@ -74,6 +75,17 @@ def entry():
                 (event_id, name, sid, data, mimetype))
     return redirect('/')
 
+@app.route('/entry/proof/<int:id>')
+def entry_proof(id: int):
+    dik = runquery("SELECT proof, mimetype " \
+        "FROM entries WHERE id= %s", (id,))[0]
+    data,mimetype = dik['proof'],dik['mimetype']
+    print(mimetype)
+    response = make_response(data)
+    response.headers.set('Content-Type', mimetype)
+    response.headers.set('Content-Disposition', 'inline', filename=f'proof-{id}')
+    return response
+
 @app.route('/entries/pending')
 def pending_entries():
     pending_list = runquery("""SELECT entries.*,
@@ -94,7 +106,7 @@ def approve_entry(id: int):
 
 @app.route('/entries/deny/<int:id>')
 def deny_entry(id: int):
-    print(f"[app/approve_entry] Approving entry ID: {id}")
+    print(f"[app/deny_entry] Denying entry ID: {id}")
     runquery("UPDATE entries SET status = 'denied' WHERE id = %s", (id,))
     return redirect('/entries/pending')
 
