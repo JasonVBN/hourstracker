@@ -60,9 +60,18 @@ def entry():
     event_id = request.form.get('event_id')
     name = request.form.get('name')
     sid = request.form.get('sid')
-    runquery("INSERT INTO entries (event_id, name, sid, status) " \
-                "VALUES (%s, %s, %s, 'pending')",
-                (event_id, name, sid))
+
+    mimetype, data = None, None
+    file = request.files.get('proofdoc')
+    if file:
+        filename = (file.filename)
+        mimetype = file.mimetype
+        data = file.read()
+        print("mimetype:", mimetype)
+
+    runquery("INSERT INTO entries (event_id, name, sid, status, proof, mimetype) " \
+                "VALUES (%s, %s, %s, 'pending', %s, %s)",
+                (event_id, name, sid, data, mimetype))
     return redirect('/')
 
 @app.route('/entries/pending')
@@ -124,7 +133,6 @@ def new_event():
     date = request.form.get('date') or None
     desc = request.form.get('desc') or None
     needproof = request.form.get('needproof')
-    print(needproof)
 
     addevent(name, hours, date, desc, needproof)
     return redirect('/events')

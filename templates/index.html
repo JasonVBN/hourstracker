@@ -50,7 +50,7 @@
 
     <div class="container">
         <h2>Members:</h2>
-        <form action="/entry" method="post">
+        <form action="/entry" method="post" enctype="multipart/form-data">
             <h3>Submit attendance</h3>
             <select name="event_id" required>
                 {% for e in events %}
@@ -63,6 +63,7 @@
             <input type="text" name="name" placeholder="your name" required>
             <input type="text" name="sid" placeholder="your student ID" maxlength=10 required>
             make sure your ID is correct, or else your hours might not be logged!
+            <input type="file" name="proofdoc" accept=".pdf,.docx,.jpg,.jpeg,.png">
             <button type="submit">Submit</button>
         </form>
 
