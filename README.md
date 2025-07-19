@@ -9,3 +9,4 @@
 - "allow multiple submissions" choice for events
 - optimization: retrieve only existence of doc, not doc data
 - export data to spreadsheet feature
+- (de)activate events
