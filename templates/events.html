@@ -151,19 +151,28 @@
         <strong><p id="qrlink"></p></strong>
     </div>
 
-    <div>
+    <div class="container" style="max-width: 75%;">
         <h2>Events:</h2>
         {% if events %}
-            <!-- <ul style="list-style:none; padding:0;"> -->
-            {% for event in events %}
-                <div class="event-tile" data-event-id="{{ event['id'] }}">
-                    <strong>{{ event['name'] }}</strong> - {{ event['date'] }} 
-                    ({{ event['hours'] }} hrs)
-
-                    <button class="getqr-btn" onclick="showqr(event, {{event['id']}})" style="float:right;">Check-in QR code</button>
-                </div>
-            {% endfor %}
-            <!-- </ul> -->
+            <table style="width:100%; border-collapse:collapse;">
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Hours</th>
+                    <th>QR code</th>
+                </tr>
+                {% for event in events %}
+                <tr class="event-tile" data-event-id="{{ event['id'] }}">
+                    <td><strong>{{ event['name'] }}</strong></td>
+                    <td>{{ event['date'] }}</td>
+                    <td>{{ event['hours'] }}</td>
+                    <td>
+                        <button class="getqr-btn" data-event-id="{{ event['id'] }}" onclick="showqr(event, this.dataset.eventId)">Check-in QR code</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            [Click an event to edit]
         {% else %}
             <p>No events available.</p>
         {% endif %}
@@ -192,5 +201,32 @@
 
         <button type="submit">Create new event</button>
     </form>
+
+    <!-- NAV BAR -->
+    <div id="navbar" class="navbar">
+        <button id="nav-toggle" class="nav-toggle">☰</button>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            
+        </ul>
+        {% if session.get('userinfo')['status'] == 'approved' %}
+        <ul class="nav-links">
+            <h2 class="nav-header">ADMIN AREA:</h2>
+            <li class="current"><a href="/events">Events</a></li>
+            <li><a href="/entries/pending">Pending Entries</a></li>
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    <script>
+    document.getElementById('nav-toggle').onclick = function() {
+        var navbar = document.getElementById('navbar');
+        navbar.classList.toggle('collapsed');
+        // document.querySelectorAll('.container').forEach(function(c) {
+        //     c.style.marginLeft = navbar.classList.contains('collapsed') ? '60px' : '220px';
+        // });
+    };
+    </script>
 </body>
 </html>
