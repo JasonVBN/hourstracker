@@ -1,4 +1,4 @@
-from flask import (Flask, render_template, redirect, url_for, 
+from flask import (Flask, render_template, redirect, url_for, jsonify,
                    session, request, send_file, make_response)
 from authlib.integrations.flask_client import OAuth
 from db import *
@@ -149,15 +149,16 @@ def new_event():
     addevent(name, hours, date, desc, needproof)
     return redirect('/events')
 
-@app.route('/events/qr/<int:event_id>')
-def getqr(event_id: int):
-    # return 'hello'
-    img = make_qr(f"https://jason.symbolstrade.com:5000/checkin/{event_id}")
+# @app.route('/events/qr/<int:event_id>')
+# def getqr(event_id: int):
+#     # return 'hello'
+#     qrlink = f"https://hourswizard.com:5000/checkin/{event_id}"
+#     img = make_qr(qrlink)
 
-    buf = io.BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
-    return send_file(buf, mimetype='image/png',)
+#     buf = io.BytesIO()
+#     img.save(buf, format='PNG')
+#     buf.seek(0)
+#     return send_file(buf, mimetype='image/png',)
 
 @app.route('/admin/accept/<int:id>')
 def accept(id: int):
@@ -244,8 +245,6 @@ if __name__ == '__main__':
             host='0.0.0.0',
             debug=True,
             # ssl_context='adhoc',
-            # ssl_context=('C:\\Users\\JasonN\\.ssh\\fullchain.pem', 
-            #              'C:\\Users\\JasonN\\.ssh\\privkey.pem')
-            ssl_context=('/etc/letsencrypt/live/symbolstrade.com-0001/fullchain.pem', 
-                    '/etc/letsencrypt/live/symbolstrade.com-0001/privkey.pem')
+            ssl_context=(os.getenv('CERT_PATH'),
+                         os.getenv('KEY_PATH'))
             )
