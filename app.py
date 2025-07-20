@@ -236,7 +236,7 @@ def exportxlsx():
     
     for sid in data:
         ws.append([sid, '?'] + data[sid])
-        
+
     # Save to BytesIO buffer
     output = io.BytesIO()
     wb.save(output)
@@ -292,6 +292,26 @@ def logout():
     f"&logout_uri={os.getenv('INDEX_URL')}" )
 
     return redirect(logout_url)
+
+@app.route('/profile')
+def myprofile():
+    return render_template('profile.html')
+
+@app.route('/profile/editbio', methods=['POST'])
+def editbio():
+    new_bio = request.form.get('bio')
+    runquery("UPDATE admins SET bio = %s WHERE email = %s", 
+             (new_bio, session['email']))
+    session['userinfo'] = getuserinfo(session['email'])
+    return redirect('/profile')
+
+@app.route('/profile/<int:id>')
+def profile(id: int):
+    user = runquery("SELECT name,bio FROM admins WHERE id = %s", (id,))[0]
+    return render_template('profile-other.html', 
+                           name=user['name'],
+                           bio=user['bio'],
+    )
 
 if __name__ == '__main__':
     app.run(port=5000, 

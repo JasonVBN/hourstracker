@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="container">
+        <p>Name: {{ session.get('userinfo').get('name') }}</p>
+        <p>Email: {{ session.get('userinfo').get('email') }}</p>
+        <p>Bio: <a href="#" id="edit-bio-link">[Edit]</a></p>
+        <p id="bio-text">
+            {{ session.get('userinfo')['bio']|replace('\n', '<br>')|safe }}</p>
+        <form id="bio-form" action="/profile/editbio" method="post" style="display:none;">
+            <textarea name="bio" id="bio" rows="4" placeholder="Add your bio here">{{ session.get('userinfo').get('bio') }}</textarea>
+            <br>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+    <script>
+    document.getElementById('edit-bio-link').onclick = function(e) {
+        e.preventDefault();
+        document.getElementById('bio-text').style.display = 'none';
+        document.getElementById('bio-form').style.display = 'block';
+        this.style.display = 'none';
+    };
+    </script>
+
+    <!-- NAV BAR -->
+    <div id="navbar" class="navbar">
+        <button id="nav-toggle" class="nav-toggle">☰</button>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            
+        </ul>
+        {% if session.get('userinfo')['status'] == 'approved' %}
+        <ul class="nav-links">
+            <h2 class="nav-header">ADMIN AREA:</h2>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/entries/pending">Pending Entries</a></li>
+            <li><a href="/export">Export Data</a></li>
+            <li class="current"><a href="/profile">Profile</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    <script>
+    document.getElementById('nav-toggle').onclick = function() {
+        var navbar = document.getElementById('navbar');
+        navbar.classList.toggle('collapsed');
+        // document.querySelectorAll('.container').forEach(function(c) {
+        //     c.style.marginLeft = navbar.classList.contains('collapsed') ? '60px' : '220px';
+        // });
+    };
+    </script>
+    <!-- END OF NAV BAR -->
+</body>
+</html>

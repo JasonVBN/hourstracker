@@ -103,7 +103,7 @@
             //     document.getElementById('qrlink').innerHTML = 'link here';
             // });
             
-            const url = "https://hourswizard.com:5000/checkin/" + eventId;
+            const url = "https://hourswizard.com/checkin/" + eventId;
             document.getElementById('qrcode').innerHTML = "";
             const qr = new QRCode(document.getElementById('qrcode'), {
                 text: url,
