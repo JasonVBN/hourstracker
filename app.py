@@ -34,6 +34,9 @@ def log(msg):
 
 @app.route('/')
 def index():
+    if 'email' in session:
+        session['userinfo'] = getuserinfo(session['email'])
+    
     log(f'index visited from {request.remote_addr}')
     return render_template('index.html',
                            user=session.get('userinfo'),
