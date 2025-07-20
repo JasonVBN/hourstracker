@@ -7,6 +7,8 @@ from emailer import send_email
 import jwt
 import requests
 import io
+import openpyxl
+from datetime import datetime
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -19,16 +21,20 @@ app.secret_key = 'hi'
 
 oauth.register(
   name='oidc',
-  authority='https://cognito-idp.us-east-2.amazonaws.com/us-east-2_qYsEPt2KR',
+  authority=os.getenv('IDP_ENDPOINT'),
   client_id=CLIENT_ID,
   client_secret=os.getenv('COGNITO_CLIENT_SECRET'),
-  server_metadata_url='https://cognito-idp.us-east-2.amazonaws.com/us-east-2_qYsEPt2KR/.well-known/openid-configuration',
+  server_metadata_url=f'{os.getenv("IDP_ENDPOINT")}/.well-known/openid-configuration',
   client_kwargs={'scope': 'openid email'}
 )
 
+def log(msg):
+    with open('log.txt', 'a') as f:
+        f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] {msg}\n")
+
 @app.route('/')
 def index():
-    
+    log(f'index visited from {request.remote_addr}')
     return render_template('index.html',
                            user=session.get('userinfo'),
                            allusers=getallusers(),
@@ -198,9 +204,56 @@ def adminrequestsubmit():
     
     return redirect('/')
 
+@app.route('/export')
+def exportpage():
+    return render_template('export.html')
+
+@app.route('/export/xlsx')
+def exportxlsx():
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Data"
+
+    events = runquery('''SELECT name, date
+                      FROM events''')
+
+    r1 = ["Student ID", "TOTAL HOURS"]
+    r2 = ["", ""]
+    for ev in events:
+        r1.append(ev['name'])
+        r2.append(ev['date'])
+    ws.append(r1)
+    ws.append(r2)
+
+    entries = runquery('''SELECT * FROM entries 
+                       WHERE status="approved" ''')
+    # optimize: only select needed
+
+    data = {} # studentid : list
+    for en in entries:
+        if en['sid'] not in data:
+            data[en['sid']] = []
+    
+    for sid in data:
+        ws.append([sid, '?'] + data[sid])
+        
+    # Save to BytesIO buffer
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="hoursdata.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 @app.route('/login')
 def login():
-    redirect_uri = url_for('authorize', _external=True)
+    log(f'/login from {request.remote_addr}')
+    # redirect_uri = url_for('authorize', _external=True)
+    redirect_uri = os.getenv('INDEX_URL') + 'authorize'
     print(f'Redirect URI: {redirect_uri}')
     return oauth.oidc.authorize_redirect(redirect_uri)
 
@@ -234,7 +287,7 @@ def authorize():
 @app.route('/logout')
 def logout():
     session.clear()
-    logout_url = ( "https://us-east-2qYsEPt2KR.auth.us-east-2.amazoncognito.com/logout"
+    logout_url = ( "https://us-east-25urYVuNOR.auth.us-east-2.amazoncognito.com/logout"
     f"?client_id={CLIENT_ID}"
     f"&logout_uri={os.getenv('INDEX_URL')}" )
 
@@ -245,6 +298,6 @@ if __name__ == '__main__':
             host='0.0.0.0',
             debug=True,
             # ssl_context='adhoc',
-            ssl_context=(os.getenv('CERT_PATH'),
-                         os.getenv('KEY_PATH'))
+            # ssl_context=(os.getenv('CERT_PATH'),
+            #              os.getenv('KEY_PATH'))
             )
