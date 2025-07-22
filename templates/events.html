@@ -94,16 +94,6 @@
 
         function showqr(event, eventId) {
             if (event) event.stopPropagation();
-            // fetch('/events/qr/' + eventId) // relative route
-            // .then(response => response.blob())
-            // .then(blob => {
-            //     const url = URL.createObjectURL(blob);
-            //     //window.open(url, '_blank');
-            //     document.getElementById('popup-bg').classList.add('active');
-            //     document.getElementById('popup2').classList.add('active');
-            //     document.getElementById('qrcode').src = url;
-            //     document.getElementById('qrlink').innerHTML = 'link here';
-            // });
             
             const url = "https://hourswizard.com/checkin/" + eventId;
             document.getElementById('qrcode').innerHTML = "";

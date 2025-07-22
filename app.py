@@ -171,17 +171,6 @@ def edit_event(id: int):
              (name, hours, date, desc, needproof, id))
     return redirect('/events')
 
-# @app.route('/events/qr/<int:event_id>')
-# def getqr(event_id: int):
-#     # return 'hello'
-#     qrlink = f"https://hourswizard.com:5000/checkin/{event_id}"
-#     img = make_qr(qrlink)
-
-#     buf = io.BytesIO()
-#     img.save(buf, format='PNG')
-#     buf.seek(0)
-#     return send_file(buf, mimetype='image/png',)
-
 @app.route('/admin/accept/<int:id>')
 def accept(id: int):
     print(f"[app/accept] Accepting admin request for ID: {id}")
