@@ -58,7 +58,7 @@
             hours: {{ event['hours']|e|tojson }},
             date: {{ event['date']|e|tojson }},
             desc: {{ event['desc']|e|tojson }},
-            proof: {{ 'true' if event.get('proof') else 'false' }}
+            proof: {{ 'true' if event.get('needproof') else 'false' }}
         };
         {% endfor %}
         function openPopup(eventId) {
@@ -68,11 +68,13 @@
             var event = eventsData[eventId];
             if (event) {
                 document.querySelector('#popup input[name="event_name"]').value = event.name || '';
-                document.querySelector('#popup input[name="event_hours"]').value = event.hours || '';
-                document.querySelector('#popup input[name="event_date"]').value = event.date || '';
-                document.querySelector('#popup textarea[name="event_desc"]').value = event.desc || '';
-                document.querySelector('#popup input[name="event_proof"]').checked = !!event.proof;
+                document.querySelector('#popup input[name="hours"]').value = event.hours || '';
+                document.querySelector('#popup input[name="date"]').value = event.date || '';
+                document.querySelector('#popup textarea[name="desc"]').value = event.desc || '';
+                document.querySelector('#popup input[name="needproof"]').checked = !!event.proof;
             }
+            // Set form action
+            document.getElementById('edit-event-form').action = '/events/edit/' + eventId;
         }
         function closePopup() {
             document.getElementById('popup-bg').classList.remove('active');
@@ -119,26 +121,25 @@
     <div id="popup-bg" class="popup-bg"></div>
     <div id="popup" class="popup">
         <button id="popup-close" class="popup-close" type="button">&times;</button>
-        <h2>Edit Event (not working yet lol)</h2>
-        <form>
-            <!-- Add your popup form fields here -->
+        <h2>Edit Event</h2>
+        <form id="edit-event-form" method="post">
             <label>Name:
             <input type="text" name="event_name" placeholder="Event Name" required>
             </label>
 
             <label># of hours (leave blank or 0 for varying):
-            <input type="number" name="event_hours" step="0.25" placeholder="hours">
+            <input type="number" name="hours" step="0.25" placeholder="hours">
             </label>
 
             <label>Date:
-            <input type="date" name="event_date">
+            <input type="date" name="date">
             </label>
 
             <label>Description: (optional)</label>
-            <textarea name="event_desc" rows="2" placeholder="description"></textarea>
+            <textarea name="desc" rows="2" placeholder="description"></textarea>
             
             <label>
-            <input type="checkbox" name="event_proof"> Need proof
+            <input type="checkbox" name="needproof"> Need proof
             </label>
             <button type="submit" class="btn">Save</button>
         </form>

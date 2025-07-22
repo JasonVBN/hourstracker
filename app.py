@@ -150,12 +150,25 @@ def events():
 @app.route('/events/new', methods=['POST'])
 def new_event():
     name = request.form.get('event_name')
-    hours = int(request.form.get('hours') or 0)
+    hours = float(request.form.get('hours') or 0)
     date = request.form.get('date') or None
     desc = request.form.get('desc') or None
-    needproof = request.form.get('needproof')
+    needproof = request.form.get('needproof') or 0
 
     addevent(name, hours, date, desc, needproof)
+    return redirect('/events')
+
+@app.route('/events/edit/<int:id>', methods=['POST'])
+def edit_event(id: int):
+    name = request.form.get('event_name')
+    hours = float(request.form.get('hours') or 0)
+    date = request.form.get('date') or None
+    desc = request.form.get('desc') or None
+    needproof = request.form.get('needproof') or 0
+
+    print(f"[app/edit_event] Editing event ID: {id}")
+    runquery("UPDATE events SET name = %s, hours = %s, date = %s, `desc` = %s, needproof = %s WHERE id = %s",
+             (name, hours, date, desc, needproof, id))
     return redirect('/events')
 
 # @app.route('/events/qr/<int:event_id>')
