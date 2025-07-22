@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hours Tracker</title>
     <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="/static/navbar.css">
     <style>
         .profile-link {
             color: #00ad5c;
@@ -16,30 +17,12 @@
         }
         .profile-link:hover {
             background: #f3f4f6;
-            /* color: #fff; */
         }
     </style>
 </head>
 <body>
     <h1 style='text-align:center;'>HoursMonkey</h1>
     <!-- <h2 style='text-align:center;'>Hours tracker for CLHS MNHS</h2> -->
-    <div id="navbar" class="navbar">
-        <button id="nav-toggle" class="nav-toggle">☰</button>
-        <ul class="nav-links">
-            <li class="current"><a href="/">Home</a></li>
-            
-        </ul>
-        {% if user['status'] == 'approved' %}
-        <ul class="nav-links">
-            <h2 class="nav-header">ADMIN AREA:</h2>
-            <li><a href="/events">Events</a></li>
-            <li><a href="/entries/pending">Pending Entries</a></li>
-            <li><a href="/export">Export Data</a></li>
-            <li><a href="/profile">Profile</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
-        {% endif %}
-    </div>
 
     <div class="container">
         <h2>Admins:</h2>
@@ -125,15 +108,32 @@
             
         </form>
     </div>
+
+    <!-- NAV BAR -->
+    <button id="nav-toggle" class="nav-toggle">☰</button>
+    <div id="navbar" class="navbar">
+        <ul class="nav-links">
+            <li class="current"><a href="/">Home</a></li>
+            
+        </ul>
+        {% if user['status'] == 'approved' %}
+        <ul class="nav-links">
+            <h2 class="nav-header">ADMIN AREA:</h2>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/entries/pending">Pending Entries</a></li>
+            <li><a href="/export">Export Data</a></li>
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    <!-- END OF NAV BAR -->
 </body>
 
 <script>
 document.getElementById('nav-toggle').onclick = function() {
     var navbar = document.getElementById('navbar');
     navbar.classList.toggle('collapsed');
-    // document.querySelectorAll('.container').forEach(function(c) {
-    //     c.style.marginLeft = navbar.classList.contains('collapsed') ? '60px' : '220px';
-    // });
 };
 </script>
 </html>
