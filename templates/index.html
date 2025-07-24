@@ -81,7 +81,7 @@
                 <input id="hours-input" type="number" name="hours" placeholder="hours" step="0.25" readonly>
                 <div id="proofdoc-div" style="display:none;">
                     This event requires documentation; submit here:
-                    <input type="file" name="proofdoc" accept=".pdf,.jpg,.jpeg,.png">
+                    <input type="file" id="doc-input" name="proofdoc" accept=".pdf,.jpg,.jpeg,.png">
                 </div>
                 <button type="submit">Submit</button>
             </form>
@@ -168,5 +168,21 @@ function updateEntryForm() {
 }
 eventSelect.addEventListener('change', updateEntryForm);
 window.addEventListener('DOMContentLoaded', updateEntryForm);
+
+
+const fileInput = document.getElementById('doc-input');
+const MAX_SIZE_MB = 10;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file) {
+        if (file.size > MAX_SIZE_BYTES) {
+            alert(`File is too large. Max allowed size is ${MAX_SIZE_MB} MB.`);
+            fileInput.value = ''; // Clear the input
+        }
+    }
+});
+
 </script>
 </html>

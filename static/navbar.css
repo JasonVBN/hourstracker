@@ -5,7 +5,7 @@
     left: 0;
     height: 100%;
     width: 200px;
-    background: #2563eb;
+    background: #002880; /* previously #2563eb */
     color: #fff;
     z-index: 2000;
     transition: width 0.2s, opacity 0.2s;
@@ -46,9 +46,10 @@
     margin: 18px 0;
 }
 .nav-links a {
-    color: #fff;
+    color: #eee;
     text-decoration: none;
     font-size: 1.1rem;
+    font-weight: 500;
     padding: 6px 18px;
     display: block;
     transition: background 0.2s;
@@ -61,7 +62,7 @@
 }
 
 .current{
-    background-color: rgb(219, 143, 0);
+    background-color: rgb(209, 136, 0);
 }
 .nav-header{
     color: white;
