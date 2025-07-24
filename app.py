@@ -34,14 +34,34 @@ def log(msg):
 
 @app.route('/')
 def index():
+    log(f'index visited from {request.remote_addr}')
+    log(session)
+
+    res, totals = [], []
     if 'email' in session:
         session['userinfo'] = getuserinfo(session['email'])
+        if session['userinfo'] is None:
+            return redirect('/admin/request')
+
+        res = runquery('''SELECT entries.status,
+                events.name, events.date, events.hours
+                FROM entries
+                JOIN events ON entries.event_id = events.id
+                WHERE user_id = %s''',
+             (session['userinfo']['id'],))
+        totals = runquery('''SELECT status, SUM(events.hours) as total
+                      FROM entries
+                      JOIN events ON entries.event_id = events.id
+                      WHERE user_id = %s
+                      GROUP BY status''',
+             (session['userinfo']['id'],))
     
-    log(f'index visited from {request.remote_addr}')
     return render_template('index.html',
                            user=session.get('userinfo'),
                            allusers=getallusers(),
-                           events=getallevents()
+                           events=getallevents(),
+                           queryresults=res,
+                           totals={x['status']: x['total'] for x in totals}
     )
 
 # visited only via QR code
@@ -57,8 +77,8 @@ def adminrequest():
 
 @app.route('/admin/kick/<int:id>')
 def kick(id: int):
-    runquery("UPDATE admins SET status = 'denied' WHERE id = %s", (id,))
-    email = runquery("SELECT email FROM admins WHERE id = %s", (id,))[0]['email']
+    runquery("UPDATE users SET status = 'denied' WHERE id = %s", (id,))
+    email = runquery("SELECT email FROM users WHERE id = %s", (id,))[0]['email']
     send_email(email,
         "you've been kicked",
         """you've been kicked from the admin list
@@ -68,8 +88,7 @@ def kick(id: int):
 @app.route('/entry', methods=['POST'])
 def entry():
     event_id = request.form.get('event_id')
-    name = request.form.get('name')
-    sid = request.form.get('sid')
+    hours = request.form.get('hours')
 
     mimetype, data = None, None
     file = request.files.get('proofdoc')
@@ -79,9 +98,9 @@ def entry():
         data = file.read()
         print("mimetype:", mimetype)
 
-    runquery("INSERT INTO entries (event_id, name, sid, status, proof, mimetype) " \
-                "VALUES (%s, %s, %s, 'pending', %s, %s)",
-                (event_id, name, sid, data, mimetype))
+    runquery("INSERT INTO entries (event_id, user_id, hours, proof, mimetype, status) " \
+                "VALUES (%s, %s, %s, %s, %s, 'pending')",
+                (event_id, session['userinfo']['id'], hours, data, mimetype))
     return redirect('/')
 
 @app.route('/entry/proof/<int:id>')
@@ -98,11 +117,12 @@ def entry_proof(id: int):
 @app.route('/entries/pending')
 def pending_entries():
     pending_list = runquery("""SELECT entries.*,
-                            events.name AS event_name, events.date, events.hours
+                            events.name AS event_name, events.date,
+                            users.name AS user_name, users.sid
                             FROM entries
                             JOIN events ON entries.event_id = events.id
-                            WHERE status = 'pending'""")
-    print(pending_list)
+                            JOIN users ON entries.user_id = users.id
+                            WHERE entries.status = 'pending'""")
     return render_template('entries.html',
             entries=pending_list,
     )
@@ -119,27 +139,15 @@ def deny_entry(id: int):
     runquery("UPDATE entries SET status = 'denied' WHERE id = %s", (id,))
     return redirect('/entries/pending')
 
-@app.route('/query', methods=['POST'])
-def query():
-    res = runquery('''SELECT entries.status,
-             events.name, events.date, events.hours
-             FROM entries
-             JOIN events ON entries.event_id = events.id
-             WHERE sid = %s''',
-             (request.form.get('sid'),))
-    totals = runquery('''SELECT status, SUM(events.hours) as total
-                      FROM entries
-                      JOIN events ON entries.event_id = events.id
-                      WHERE sid = %s
-                      GROUP BY status''',
-             (request.form.get('sid'),))
-    return render_template('index.html',
-                           user=session.get('userinfo'),
-                           allusers=getallusers(),
-                           events=getallevents(),
-                           queryresults=res,
-                           totals={x['status']: x['total'] for x in totals}
-                           )
+# @app.route('/query', methods=['POST'])
+# def query():
+    
+#     return render_template('index.html',
+#                            user=session.get('userinfo'),
+#                            allusers=getallusers(),
+#                            events=getallevents(),
+                           
+#                            )
 
 @app.route('/events')
 def events():
@@ -176,7 +184,7 @@ def accept(id: int):
     print(f"[app/accept] Accepting admin request for ID: {id}")
     updatestatus(id, 'approved')
 
-    email = runquery("SELECT email FROM admins WHERE id = %s", (id,))[0]['email']
+    email = runquery("SELECT email FROM users WHERE id = %s", (id,))[0]['email']
     send_email(email,
         "you've been approved",
         """you've been approved as an admin!
@@ -188,7 +196,7 @@ def deny(id: int):
     print(f"[app/accept] Denying admin request for ID: {id}")
     updatestatus(id, 'denied')
 
-    email = runquery("SELECT email FROM admins WHERE id = %s", (id,))[0]['email']
+    email = runquery("SELECT email FROM users WHERE id = %s", (id,))[0]['email']
     send_email(email,
         "you've been denied",
         """you've been denied from admin role :(
@@ -208,6 +216,34 @@ def adminrequestsubmit():
     print(f"User info after request: {session['userinfo']}")
     
     return redirect('/')
+
+@app.route('/member/join/submit', methods=['POST'])
+def memberjoin():
+    fname = request.form.get('fname')
+    lname = request.form.get('lname')
+    sid = request.form.get('sid')
+
+    if not (fname and lname and sid):
+        return jsonify({"error": "All fields are required"}), 400
+
+    # is it safe to assume user still logged in?
+    runquery('''INSERT INTO users (email, name, sid, status, role) 
+            VALUES (%s, %s, %s, 'approved', 'member')
+            ON DUPLICATE KEY UPDATE
+            name=VALUES(name), sid=VALUES(sid), status='approved', role='member' ''',
+              (session['email'], f'{fname} {lname}', sid))
+    
+    userinfo = getuserinfo(session['email'])
+    session['userinfo'] = userinfo
+    print(f"User info after join: {session['userinfo']}")
+    
+    return redirect('/')
+
+@app.route('/roster')
+def roster():
+    users = runquery('''SELECT * FROM users''')
+    return render_template('roster.html', 
+                           users=users)
 
 @app.route('/export')
 def exportpage():
@@ -305,14 +341,14 @@ def myprofile():
 @app.route('/profile/editbio', methods=['POST'])
 def editbio():
     new_bio = request.form.get('bio')
-    runquery("UPDATE admins SET bio = %s WHERE email = %s", 
+    runquery("UPDATE users SET bio = %s WHERE email = %s", 
              (new_bio, session['email']))
     session['userinfo'] = getuserinfo(session['email'])
     return redirect('/profile')
 
 @app.route('/profile/<int:id>')
 def profile(id: int):
-    user = runquery("SELECT name,bio FROM admins WHERE id = %s", (id,))[0]
+    user = runquery("SELECT name,bio FROM users WHERE id = %s", (id,))[0]
     return render_template('profile-other.html', 
                            name=user['name'],
                            bio=user['bio'],

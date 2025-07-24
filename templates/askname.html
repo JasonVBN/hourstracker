@@ -5,15 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="/static/signup.css">
 </head>
 <body>
-    <form action="/admin/request/submit" method="post">
+    
+    <h2 style="text-align:center; margin-bottom: 32px;">Select your role:</h2>
+    <div style="display: flex; gap: 32px; margin-bottom: 32px; justify-content: center;">
+        <button id="show-member" type="button" class="role-btn">Member</button>
+        <button id="show-admin" type="button" class="role-btn">Admins</button>
+    </div>
+    <form id="admin-form" action="/admin/request/submit" method="post" style="display:none;">
         <h2>Request to join admins</h2>
         <label>Name:</label>
-        <input type="text" name="name" placeholder="Enter your name">
+        <input type="text" name="name" placeholder="Enter your name" required>
         <label>Student ID:</label>
-        <input type="text" name="sid" placeholder="Enter your student ID">
+        <input type="text" name="sid" placeholder="Enter your student ID" required>
         <input type="submit" value="Submit request">
     </form>
+
+    <form id="member-form" action="/member/join/submit" method="post" style="display:none;">
+        <h2>Join as member</h2>
+        <label>First Name:</label>
+        <input type="text" name="fname" placeholder="Enter your first name" required>
+        <label>Last Name:</label>
+        <input type="text" name="lname" placeholder="Enter your last name" required>
+        <label>Student ID:</label>
+        <input type="text" name="sid" placeholder="Enter your student ID" required>
+        <input type="submit" value="Join!">
+    </form>
+    <style>
+        
+    </style>
+    <script>
+        document.getElementById('show-member').onclick = function() {
+            document.getElementById('member-form').style.display = 'block';
+            document.getElementById('admin-form').style.display = 'none';
+        };
+        document.getElementById('show-admin').onclick = function() {
+            document.getElementById('admin-form').style.display = 'block';
+            document.getElementById('member-form').style.display = 'none';
+        };
+    </script>
 </body>
 </html>

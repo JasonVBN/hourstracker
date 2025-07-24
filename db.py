@@ -16,19 +16,26 @@ status options: enum('denied','pending','approved')
 '''
 
 def runquery(query: str, params=None) -> list:
-    conn = mysql.connector.connect(**config)
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(query, params)
-    print(f"[db/runquery] Executed query: {query} with params: {params}")
-    
-    result = None
-    if cursor.with_rows:
-        result = cursor.fetchall()
-        print(f"[db/runquery] Retrieved: {result}")
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return result
+    try:
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, params)
+        print(f"[db/runquery] Executed query: {query} with params: {params}")
+        
+        result = None
+        if cursor.with_rows:
+            result = cursor.fetchall()
+            print(f"[db/runquery] Retrieved: {result}")
+        conn.commit()
+        
+        return result
+    except Exception as e:
+        print(f"[db/runquery] Error: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+        print(f"[db/runquery] Connection closed.")
 
 def geteventbyid(event_id: int):
     return runquery("SELECT * FROM events WHERE id = %s", (event_id,))[0]
@@ -60,7 +67,7 @@ def getallevents():
 def updatestatus(id: int, status: str):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-    cursor.execute("UPDATE admins SET status = %s WHERE id = %s", (status, id))
+    cursor.execute("UPDATE users SET status = %s WHERE id = %s", (status, id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -70,7 +77,7 @@ def getallusers():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM admins")
+    cursor.execute("SELECT * FROM users")
     users = cursor.fetchall()
 
     cursor.close()
@@ -83,7 +90,7 @@ def getuserinfo(email: str):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM admins WHERE email = %s", (email,))
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
     info = cursor.fetchone()
     # if info is None:
     #     print(f"[db/getuserinfo] User is new, adding...")
@@ -104,10 +111,10 @@ def getuserinfo(email: str):
 def addnewadmin(email: str, name: str):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-    cursor.execute("""INSERT INTO admins (email, name, status) 
-                    VALUES (%s, %s, %s)
+    cursor.execute("""INSERT INTO users (email, name, status, role) 
+                    VALUES (%s, %s, %s, 'admin')
                     ON DUPLICATE KEY UPDATE 
-                    name=VALUES(name), status = 'pending';""",
+                    name=VALUES(name), status='pending', role='admin';""",
                        (email, name, 'pending'))
     conn.commit()
     cursor.close()

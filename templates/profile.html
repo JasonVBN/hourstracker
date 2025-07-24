@@ -34,16 +34,17 @@
         <button id="nav-toggle" class="nav-toggle">☰</button>
         <ul class="nav-links">
             <li><a href="/">Home</a></li>
-            
-        </ul>
-        {% if session.get('userinfo')['status'] == 'approved' %}
-        <ul class="nav-links">
-            <h2 class="nav-header">ADMIN AREA:</h2>
-            <li><a href="/events">Events</a></li>
-            <li><a href="/entries/pending">Pending Entries</a></li>
-            <li><a href="/export">Export Data</a></li>
             <li class="current"><a href="/profile">Profile</a></li>
             <li><a href="/logout">Logout</a></li>
+        </ul>
+        {% if session.get('userinfo')['role']=='admin' 
+        and session.get('userinfo')['status']=='approved' %}
+        <ul class="nav-links">
+            <h2 class="nav-header">ADMIN ZONE:</h2>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/entries/pending">Pending Entries</a></li>
+            <li><a href="/roster">Roster</a></li>
+            <li><a href="/export">Export Data</a></li>
         </ul>
         {% endif %}
     </div>

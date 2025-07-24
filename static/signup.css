@@ -1,0 +1,46 @@
+.role-btn {
+    font-size: 1.5rem;
+    padding: 32px;
+    border-radius: 16px;
+    background: #2563eb;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s, transform 0.1s;
+    border: none;
+}
+.role-btn:hover {
+    background: #1e40af;
+    transform: scale(1.04);
+}
+form {
+    max-width: 400px;
+    margin: 0 auto 32px auto;
+    background: #f9f9f9;
+    padding: 24px 28px 18px 28px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+form label {
+    display: block;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+form input[type="text"] {
+    width: 100%;
+    margin-bottom: 8px;
+}
+form input[type="submit"] {
+    width: 100%;
+    margin-top: 16px;
+    background: #2563eb;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    transition: background 0.2s;
+}
+form input[type="submit"]:hover {
+    background: #1e40af;
+}
