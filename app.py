@@ -44,13 +44,13 @@ def index():
         if session['userinfo'] is None:
             return redirect('/admin/request')
 
-        res = runquery('''SELECT entries.status,
-                events.name, events.date, events.hours
+        res = runquery('''SELECT entries.status, entries.hours,
+                events.name, events.date
                 FROM entries
                 JOIN events ON entries.event_id = events.id
                 WHERE user_id = %s''',
              (session['userinfo']['id'],))
-        totals = runquery('''SELECT status, SUM(events.hours) as total
+        totals = runquery('''SELECT status, SUM(entries.hours) as total
                       FROM entries
                       JOIN events ON entries.event_id = events.id
                       WHERE user_id = %s

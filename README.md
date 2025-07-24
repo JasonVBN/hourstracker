@@ -11,5 +11,5 @@
 - export data to spreadsheet feature
 - (de)activate events
 - preserve navbar state
-- fix issue: variable-time entries showing as 0 in My Hours
+- DONE! fix issue: variable-time entries showing as 0 in My Hours
 - *important* protect admin-only routes
