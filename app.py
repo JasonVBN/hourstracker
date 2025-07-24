@@ -117,6 +117,11 @@ def entry_proof(id: int):
 
 @app.route('/entries/pending')
 def pending_entries():
+    if ('email' not in session) or ('userinfo' not in session):
+        return redirect('/login')
+    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
+        return render_template("badboi.html")
+    
     t1 = time.time()
     pending_list = runquery("""SELECT en.id, en.event_id, en.user_id, en.hours, en.mimetype, en.status,
                             events.name AS event_name, events.date,
@@ -155,6 +160,11 @@ def deny_entry(id: int):
 
 @app.route('/events')
 def events():
+    if ('email' not in session) or ('userinfo' not in session):
+        return redirect('/login')
+    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
+        return render_template("badboi.html")
+    
     return render_template('events.html',
                            events=getallevents(),
     )
@@ -245,12 +255,22 @@ def memberjoin():
 
 @app.route('/roster')
 def roster():
+    if ('email' not in session) or ('userinfo' not in session):
+        return redirect('/login')
+    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
+        return render_template("badboi.html")
+
     users = runquery('''SELECT * FROM users''')
     return render_template('roster.html', 
                            users=users)
 
 @app.route('/export')
 def exportpage():
+    if ('email' not in session) or ('userinfo' not in session):
+        return redirect('/login')
+    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
+        return render_template("badboi.html")
+    
     return render_template('export.html')
 
 @app.route('/export/xlsx')

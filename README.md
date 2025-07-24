@@ -12,4 +12,4 @@
 - (de)activate events
 - preserve navbar state
 - DONE! fix issue: variable-time entries showing as 0 in My Hours
-- *important* protect admin-only routes
+- DONE! *important* protect admin-only routes
