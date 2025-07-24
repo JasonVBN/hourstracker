@@ -53,7 +53,7 @@
                 <td>{{ entry['date'] }}</td>
                 <td>{{ entry['hours'] }}</td>
                 <td>
-                    {% if entry['proof'] %}
+                    {% if entry['mimetype'] %}
                         <a href="/entry/proof/{{entry['id']}}" target="_blank">See document</a>
                     {% endif %}
                 </td>
@@ -71,6 +71,7 @@
             </tr>
         {% endif %}
     </table>
+    <p style="text-align:center;">Load time: {{time}} s</p>
 
     <!-- NAV BAR -->
     <div id="navbar" class="navbar">

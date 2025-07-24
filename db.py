@@ -25,7 +25,7 @@ def runquery(query: str, params=None) -> list:
         result = None
         if cursor.with_rows:
             result = cursor.fetchall()
-            print(f"[db/runquery] Retrieved: {result}")
+            print(f"[db/runquery] Retrieved {len(result)} items")
         conn.commit()
         
         return result

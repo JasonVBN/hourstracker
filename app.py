@@ -9,6 +9,7 @@ import requests
 import io
 import openpyxl
 from datetime import datetime
+import time
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -116,15 +117,18 @@ def entry_proof(id: int):
 
 @app.route('/entries/pending')
 def pending_entries():
-    pending_list = runquery("""SELECT entries.*,
+    t1 = time.time()
+    pending_list = runquery("""SELECT en.id, en.event_id, en.user_id, en.hours, en.mimetype, en.status,
                             events.name AS event_name, events.date,
                             users.name AS user_name, users.sid
-                            FROM entries
-                            JOIN events ON entries.event_id = events.id
-                            JOIN users ON entries.user_id = users.id
-                            WHERE entries.status = 'pending'""")
+                            FROM entries AS en
+                            JOIN events ON en.event_id = events.id
+                            JOIN users ON en.user_id = users.id
+                            WHERE en.status = 'pending'""")
+    t2 = time.time()
     return render_template('entries.html',
             entries=pending_list,
+            time=round(t2-t1,3),
     )
 
 @app.route('/entries/approve/<int:id>')
