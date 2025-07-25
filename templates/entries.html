@@ -9,7 +9,7 @@
     <style>
         table {
             width: 70%;
-            margin: 40px auto;
+            margin: 20px auto;
             border-collapse: collapse;
             background: #fff;
             border-radius: 12px;
@@ -21,7 +21,7 @@
             text-align: left;
         }
         th {
-            background: #2563eb;
+            background: #002880;
             color: #fff;
             font-weight: 600;
         }
@@ -37,6 +37,7 @@
     </style>
 </head>
 <body>
+    <h2>Pending:</h2>
     <table>
         <tr>
             <th>Name (student ID)</th>
@@ -46,7 +47,7 @@
             <th>Doc</th>
             <th>Decision</th>
         </tr>
-        {% for entry in entries %}
+        {% for entry in pending_entries %}
             <tr>
                 <td>{{entry['user_name']}} ({{entry['sid']}})</td>
                 <td>{{ entry['event_name'] }}</td>
@@ -65,11 +66,44 @@
                 </td>
             </tr>
         {% endfor %}
-        {% if not entries %}
+        {% if not pending_entries %}
             <tr>
                 <td colspan="5">No pending entries.</td>
             </tr>
         {% endif %}
+    </table>
+
+    <h2>Past entries:</h2>
+    <table>
+        <tr>
+            <th>Name (student ID)</th>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Hours</th>
+            <th>Doc</th>
+            <th>Decision</th>
+        </tr>
+        {% for entry in past_entries %}
+            <tr>
+                <td>{{entry['user_name']}} ({{entry['sid']}})</td>
+                <td>{{ entry['event_name'] }}</td>
+                <td>{{ entry['date'] }}</td>
+                <td>{{ entry['hours'] }}</td>
+                <td>
+                    {% if entry['mimetype'] %}
+                        <a href="/entry/proof/{{entry['id']}}" target="_blank">See document</a>
+                    {% endif %}
+                </td>
+                <td>
+                    {{entry['status']}}
+                    {% if entry['status'] == 'approved' %}
+                        <span style="color: green;">✔</span>
+                    {% elif entry['status'] == 'denied' %}
+                        <span style="color: red;">✘</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
     </table>
     <p style="text-align:center;">Load time: {{time}} s</p>
 

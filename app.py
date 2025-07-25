@@ -123,16 +123,24 @@ def pending_entries():
         return render_template("badboi.html")
     
     t1 = time.time()
-    pending_list = runquery("""SELECT en.id, en.event_id, en.user_id, en.hours, en.mimetype, en.status,
+    pending_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status,
                             events.name AS event_name, events.date,
                             users.name AS user_name, users.sid
                             FROM entries AS en
                             JOIN events ON en.event_id = events.id
                             JOIN users ON en.user_id = users.id
                             WHERE en.status = 'pending'""")
+    past_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status,
+                            events.name AS event_name, events.date,
+                            users.name AS user_name, users.sid
+                            FROM entries AS en
+                            JOIN events ON en.event_id = events.id
+                            JOIN users ON en.user_id = users.id
+                            WHERE en.status != 'pending' """)
     t2 = time.time()
     return render_template('entries.html',
-            entries=pending_list,
+            pending_entries=pending_list,
+            past_entries=past_list,
             time=round(t2-t1,3),
     )
 

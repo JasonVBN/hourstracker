@@ -17,6 +17,9 @@ h2, h3 {
     margin-top: 0;
     font-weight: 600;
 }
+h2 {
+    text-align: center;
+}
 h3, p, li, a, button, label {
     font-size: 1rem;
 }
