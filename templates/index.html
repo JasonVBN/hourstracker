@@ -22,8 +22,8 @@
 </head>
 <body>
     <h1 style='text-align:center;'>HoursMonkey</h1>
-    <!-- <h2 style='text-align:center;'>Hours tracker for CLHS MNHS</h2> -->
-    <h2 style='text-align:center;'>(in development; official release Thurs 7/24)</h2>
+    <h2 style='text-align:center;'>Hours tracker for CLHS MNHS</h2>
+    <!-- <h2 style='text-align:center;'>(in development; official release Thurs 7/24)</h2> -->
 
     <div class="container">
         {% if not user %}
@@ -78,7 +78,7 @@
                         </option>
                     {% endfor %}
                 </select>
-                <input id="hours-input" type="number" name="hours" placeholder="hours" step="0.25" readonly>
+                <input id="hours-input" type="number" name="hours" placeholder="Hours" step="0.25" readonly>
                 <div id="proofdoc-div" style="display:none;">
                     This event requires documentation; submit here:
                     <input type="file" id="doc-input" name="proofdoc" accept=".pdf,.jpg,.jpeg,.png">

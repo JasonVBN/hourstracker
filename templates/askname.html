@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Join</title>
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/signup.css">
 </head>
 <body>
     
-    <h2 style="text-align:center; margin-bottom: 32px;">Select your role:</h2>
+    <h2 style="text-align:center; margin: 32px 0;">Select your role:</h2>
     <div style="display: flex; gap: 32px; margin-bottom: 32px; justify-content: center;">
         <button id="show-member" type="button" class="role-btn">Member</button>
-        <button id="show-admin" type="button" class="role-btn">Admins</button>
+        <button id="show-admin" type="button" class="role-btn">Admin (officer)</button>
     </div>
     <form id="admin-form" action="/admin/request/submit" method="post" style="display:none;">
         <h2>Request to join admins</h2>

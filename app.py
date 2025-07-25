@@ -279,28 +279,40 @@ def exportxlsx():
     ws = wb.active
     ws.title = "Data"
 
-    events = runquery('''SELECT name, date
+    events = runquery('''SELECT id, name, date
                       FROM events''')
 
-    r1 = ["Student ID", "TOTAL HOURS"]
-    r2 = ["", ""]
+    columnidx = {}
+    r1 = ["Name", "Student ID", "Email", "TOTAL HOURS"]
+    r2 = ["", "", "", ""]
     for ev in events:
         r1.append(ev['name'])
         r2.append(ev['date'])
+        columnidx[ev['id']] = len(r1) - 1  # Store the index of the event in the header row
     ws.append(r1)
     ws.append(r2)
+    users = runquery('''SELECT id, name, sid, email FROM users''')
 
-    entries = runquery('''SELECT * FROM entries 
-                       WHERE status="approved" ''')
-    # optimize: only select needed
+    data = {u['id'] : [u['name'], u['sid'], u['email'], 0] + [0]*len(events) for u in users}
+    # userid : [name, sid, email, ...]
 
-    data = {} # studentid : list
-    for en in entries:
-        if en['sid'] not in data:
-            data[en['sid']] = []
+    entries = runquery('''
+                       SELECT * FROM entries 
+                       WHERE status="approved"
+                       ''')
+    # optimize: only select needed fields
     
-    for sid in data:
-        ws.append([sid, '?'] + data[sid])
+    for en in entries:
+        uid = en['user_id']
+        event_id = en['event_id']
+        data[uid][3] += en['hours']
+        if event_id in columnidx:
+            col_idx = columnidx[event_id]
+            data[uid][col_idx] += en['hours']
+    
+    # write data to worksheet
+    for uid in data:
+        ws.append(['' if x==0 else x for x in data[uid]])
 
     # Save to BytesIO buffer
     output = io.BytesIO()
