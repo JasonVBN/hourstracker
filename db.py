@@ -4,7 +4,7 @@ import os
 load_dotenv()
 
 config = {
-    'host': '10.1.10.57',
+    'host': os.getenv('DB_IP'),
     'user': os.getenv('DB_USER'),
     'password': os.getenv('DB_PASS'),
     'database': 'HoursTracker',

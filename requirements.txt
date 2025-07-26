@@ -3,3 +3,5 @@ authlib
 requests
 mysql-connector-python
 dotenv
+PyJWT
+openpyxl

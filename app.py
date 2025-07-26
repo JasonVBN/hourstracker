@@ -2,7 +2,7 @@ from flask import (Flask, render_template, redirect, url_for, jsonify,
                    session, request, send_file, make_response)
 from authlib.integrations.flask_client import OAuth
 from db import *
-from qr import *
+# from qr import *
 from emailer import send_email
 import jwt
 import requests
