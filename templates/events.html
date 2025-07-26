@@ -216,10 +216,17 @@
     document.getElementById('nav-toggle').onclick = function() {
         var navbar = document.getElementById('navbar');
         navbar.classList.toggle('collapsed');
-        // document.querySelectorAll('.container').forEach(function(c) {
-        //     c.style.marginLeft = navbar.classList.contains('collapsed') ? '60px' : '220px';
-        // });
+        // Save state
+        localStorage.setItem('navbarCollapsed', navbar.classList.contains('collapsed') ? '1' : '0');
     };
+    window.addEventListener('DOMContentLoaded', function() {
+        var navbar = document.getElementById('navbar');
+        if (localStorage.getItem('navbarCollapsed') === '1') {
+            navbar.classList.add('collapsed');
+        } else {
+            navbar.classList.remove('collapsed');
+        }
+    });
     </script>
     <!-- END OF NAV BAR -->
 </body>
