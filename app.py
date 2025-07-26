@@ -344,6 +344,9 @@ def login():
 
 @app.route('/authorize')
 def authorize():
+    print("Returned state:", request.args.get('state'))
+    print("Stored state:", session.get('_oauth2_state'))
+    
     token = oauth.oidc.authorize_access_token()
     id_token = token.get('id_token')
     print(f"ID Token: {id_token}")
@@ -380,6 +383,8 @@ def logout():
 
 @app.route('/profile')
 def myprofile():
+    if 'userinfo' not in session:
+        return redirect('/login')
     return render_template('profile.html')
 
 @app.route('/profile/editbio', methods=['POST'])

@@ -10,6 +10,7 @@
 <body>
     <div class="container">
         <p>Name: {{ session.get('userinfo').get('name') }}</p>
+        <p>Role: {{ session.get('userinfo').get('role') }} <a href="/admin/request">[Change]</a></p>
         <p>Email: {{ session.get('userinfo').get('email') }}</p>
         <p>Bio: <a href="#" id="edit-bio-link">[Edit]</a></p>
         <p id="bio-text">

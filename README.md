@@ -10,7 +10,7 @@
 - DONE! optimization: retrieve only existence of doc, not doc data
 - DONE! export data to spreadsheet feature
 - (de)activate events
-- preserve navbar state
+- DONE! preserve navbar state
 - DONE! fix issue: variable-time entries showing as 0 in My Hours
 - DONE! *important* protect admin-only routes
 - option to enable email notifs

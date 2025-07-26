@@ -61,7 +61,7 @@ def getallevents():
     cursor.close()
     conn.close()
 
-    print(f"[db/getallevents] Events fetched: {events}")
+    print(f"[db/getallevents] Events fetched: {len(events)}")
     return events
 
 def updatestatus(id: int, status: str):
@@ -83,7 +83,7 @@ def getallusers():
     cursor.close()
     conn.close()
 
-    print(f"[db/getallusers] Users fetched: {users}")
+    print(f"[db/getallusers] Users fetched: {len(users)}")
     return users
 
 def getuserinfo(email: str):
