@@ -40,13 +40,14 @@ def runquery(query: str, params=None) -> list:
 def geteventbyid(event_id: int):
     return runquery("SELECT * FROM events WHERE id = %s", (event_id,))[0]
 
-def addevent(name, hours=0, date=None, desc=None, needproof=False):
+def addevent(code, name, hours=0, date=None, desc=None, needproof=False):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
+    print(code)
     cursor.execute("INSERT INTO events"
-                   "(name, hours, date, `desc`, needproof) "
-                   "VALUES (%s, %s, %s, %s, %s)",
-                    (name, hours, date, desc, needproof))
+                   "(id, name, hours, date, `desc`, needproof) "
+                   "VALUES (%s, %s, %s, %s, %s, %s)",
+                    (code, name, hours, date, desc, needproof))
     conn.commit()
     cursor.close()
     conn.close()

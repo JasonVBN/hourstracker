@@ -8,6 +8,7 @@ import jwt
 import requests
 import io
 import openpyxl
+import uuid
 from datetime import datetime
 import time
 from dotenv import load_dotenv
@@ -66,7 +67,7 @@ def index():
     )
 
 # visited only via QR code
-@app.route('/checkin/<int:event_id>')
+@app.route('/checkin/<string:event_id>')
 def checkin(event_id):
     return render_template('checkin.html',
                             event=geteventbyid(event_id),
@@ -170,12 +171,14 @@ def events():
 @app.route('/events/new', methods=['POST'])
 def new_event():
     name = request.form.get('event_name')
+    code = request.form.get('code') or None
     hours = float(request.form.get('hours') or 0)
     date = request.form.get('date') or None
     desc = request.form.get('desc') or None
     needproof = request.form.get('needproof') or 0
-
-    addevent(name, hours, date, desc, needproof)
+    if not code:
+        code = str(uuid.uuid4())
+    addevent(code, name, hours, date, desc, needproof)
     return redirect('/events')
 
 @app.route('/events/edit/<int:id>', methods=['POST'])

@@ -44,6 +44,41 @@
             color: #888;
             cursor: pointer;
         }
+
+
+        .help-icon {
+        display: inline-block;
+        margin-left: 6px;
+        background: #2563eb;
+        color: #fff;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        font-size: 13px;
+        line-height: 18px;
+        cursor: pointer;
+        position: relative;
+    }
+    .help-tooltip {
+        display: none;
+        position: absolute;
+        left: 24px;
+        top: 0;
+        background: #fff;
+        color: #222;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 10px 16px;
+        width: 240px;
+        z-index: 10;
+        font-size: 0.95em;
+    }
+    .help-icon:hover .help-tooltip,
+    .help-icon:focus .help-tooltip {
+        display: block;
+    }
     </style>
 
     <!-- QRCode.js: -->
@@ -173,6 +208,18 @@
         <h2>Create new event:</h2>
         <label>Name:
         <input type="text" name="event_name" placeholder="Event Name" required>
+        </label>
+
+        <label>Unique code:
+        <input type="text" name="code" placeholder="Event Code">
+        <span class="help-icon" tabindex="0">?
+            <span class="help-tooltip">
+                <p>
+                    Custom code for this event's check-in URL.<br>
+                    Leave blank to have a random code generated automatically.
+                </p>
+            </span>
+        </span>
         </label>
 
         <label># of hours (leave blank or 0 for varying):
