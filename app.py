@@ -125,14 +125,14 @@ def pending_entries():
     t1 = time.time()
     pending_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status,
                             events.name AS event_name, events.date,
-                            users.name AS user_name, users.sid
+                            users.fname AS user_fname, users.lname AS user_lname, users.sid
                             FROM entries AS en
                             JOIN events ON en.event_id = events.id
                             JOIN users ON en.user_id = users.id
                             WHERE en.status = 'pending'""")
     past_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status,
                             events.name AS event_name, events.date,
-                            users.name AS user_name, users.sid
+                            users.fname AS user_fname, users.lname AS user_lname, users.sid
                             FROM entries AS en
                             JOIN events ON en.event_id = events.id
                             JOIN users ON en.user_id = users.id
@@ -155,16 +155,6 @@ def deny_entry(id: int):
     print(f"[app/deny_entry] Denying entry ID: {id}")
     runquery("UPDATE entries SET status = 'denied' WHERE id = %s", (id,))
     return redirect('/entries/pending')
-
-# @app.route('/query', methods=['POST'])
-# def query():
-    
-#     return render_template('index.html',
-#                            user=session.get('userinfo'),
-#                            allusers=getallusers(),
-#                            events=getallevents(),
-                           
-#                            )
 
 @app.route('/events')
 def events():
@@ -227,11 +217,12 @@ def deny(id: int):
 
 @app.route('/admin/request/submit', methods=['POST'])
 def adminrequestsubmit():
-    name = request.form.get('name')
+    fname = request.form.get('fname')
+    lname = request.form.get('lname')
     sid = request.form.get('sid')
 
     # is it safe to assume user still logged in?
-    addnewadmin(session['email'], name)
+    addnewadmin(session['email'], fname, lname, sid)
     userinfo = getuserinfo(session['email'])
 
     session['userinfo'] = userinfo
@@ -249,12 +240,12 @@ def memberjoin():
         return jsonify({"error": "All fields are required"}), 400
 
     # is it safe to assume user still logged in?
-    runquery('''INSERT INTO users (email, name, sid, status, role) 
-            VALUES (%s, %s, %s, 'approved', 'member')
+    runquery('''INSERT INTO users (email, fname, lname, sid, status, role) 
+            VALUES (%s, %s, %s, %s, 'approved', 'member')
             ON DUPLICATE KEY UPDATE
-            name=VALUES(name), sid=VALUES(sid), status='approved', role='member' ''',
-              (session['email'], f'{fname} {lname}', sid))
-    
+            fname=VALUES(fname), lname=VALUES(lname), sid=VALUES(sid), status='approved', role='member' ''',
+              (session['email'], fname, lname, sid))
+
     userinfo = getuserinfo(session['email'])
     session['userinfo'] = userinfo
     print(f"User info after join: {session['userinfo']}")
@@ -291,19 +282,19 @@ def exportxlsx():
                       FROM events''')
 
     columnidx = {}
-    r1 = ["Name", "Student ID", "Email", "TOTAL HOURS"]
-    r2 = ["", "", "", ""]
+    r1 = ["First Name", "Last Name", "Student ID", "Email", "TOTAL HOURS"]
+    r2 = ["", "", "", "", ""]
     for ev in events:
         r1.append(ev['name'])
         r2.append(ev['date'])
         columnidx[ev['id']] = len(r1) - 1  # Store the index of the event in the header row
     ws.append(r1)
     ws.append(r2)
-    users = runquery('''SELECT id, name, sid, email FROM users''')
+    users = runquery('''SELECT id, fname, lname, sid, email FROM users''')
 
-    data = {u['id'] : [u['name'], u['sid'], u['email'], 0] + [0]*len(events) for u in users}
-    # userid : [name, sid, email, ...]
-
+    data = {u['id'] : [u['fname'], u['lname'], u['sid'], u['email'], 0] + [0]*len(events) for u in users}
+    # userid : [fname, lname, sid, email, ...]
+    print(data)
     entries = runquery('''
                        SELECT * FROM entries 
                        WHERE status="approved"
@@ -313,7 +304,7 @@ def exportxlsx():
     for en in entries:
         uid = en['user_id']
         event_id = en['event_id']
-        data[uid][3] += en['hours']
+        data[uid][4] += en['hours']
         if event_id in columnidx:
             col_idx = columnidx[event_id]
             data[uid][col_idx] += en['hours']
@@ -397,9 +388,9 @@ def editbio():
 
 @app.route('/profile/<int:id>')
 def profile(id: int):
-    user = runquery("SELECT name,bio FROM users WHERE id = %s", (id,))[0]
+    user = runquery("SELECT fname,lname,bio FROM users WHERE id = %s", (id,))[0]
     return render_template('profile-other.html', 
-                           name=user['name'],
+                           name=user['fname']+' '+user['lname'],
                            bio=user['bio'],
     )
 

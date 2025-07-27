@@ -9,14 +9,14 @@
 </head>
 <body>
     <div class="container">
-        <p>Name: {{ session.get('userinfo').get('name') }}</p>
-        <p>Role: {{ session.get('userinfo').get('role') }} <a href="/admin/request">[Change]</a></p>
-        <p>Email: {{ session.get('userinfo').get('email') }}</p>
+        <p>Name: {{ session['userinfo'].get('fname') + ' ' + session['userinfo'].get('lname') }}</p>
+        <p>Role: {{ session['userinfo'].get('role') }} <a href="/admin/request">[Change]</a></p>
+        <p>Email: {{ session['userinfo'].get('email') }}</p>
         <p>Bio: <a href="#" id="edit-bio-link">[Edit]</a></p>
         <p id="bio-text">
-            {{ session.get('userinfo')['bio']|replace('\n', '<br>')|safe }}</p>
+            {{ session['userinfo']['bio']|replace('\n', '<br>')|safe }}</p>
         <form id="bio-form" action="/profile/editbio" method="post" style="display:none;">
-            <textarea name="bio" id="bio" rows="4" placeholder="Add your bio here">{{ session.get('userinfo').get('bio') }}</textarea>
+            <textarea name="bio" id="bio" rows="4" placeholder="Add your bio here">{{ session['userinfo'].get('bio') }}</textarea>
             <br>
             <button type="submit">Save</button>
         </form>

@@ -108,14 +108,14 @@ def getuserinfo(email: str):
     print(f"[db/getuserinfo] User fetched: {info}")
     return info
 
-def addnewadmin(email: str, name: str):
+def addnewadmin(email: str, fname: str, lname: str, sid: str):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-    cursor.execute("""INSERT INTO users (email, name, status, role) 
-                    VALUES (%s, %s, %s, 'admin')
+    cursor.execute("""INSERT INTO users (email, fname, lname, sid, status, role) 
+                    VALUES (%s, %s, %s, %s, %s, 'admin')
                     ON DUPLICATE KEY UPDATE 
-                    name=VALUES(name), status='pending', role='admin';""",
-                       (email, name, 'pending'))
+                    fname=VALUES(fname), lname=VALUES(lname), sid=VALUES(sid), status='pending', role='admin';""",
+                       (email, fname, lname, sid, 'pending'))
     conn.commit()
     cursor.close()
     conn.close()

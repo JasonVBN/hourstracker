@@ -39,7 +39,7 @@
                 {% if user['status']=='approved' %}
                     <h3>Approved admins:</h3>
                     {% for u in allusers | selectattr('status','equalto','approved') | selectattr('role','equalto','admin') %}
-                        <p><a class="profile-link" href="/profile/{{ u['id'] }}">{{ u['name'] }}</a> ({{ u['email'] }})
+                        <p><a class="profile-link" href="/profile/{{ u['id'] }}">{{ u['fname']+' '+u['lname'] }}</a> ({{ u['email'] }})
                         <a class="btn communist" href="/admin/kick/{{ u['id'] }}">Kick</a>
                         </p>
                     {% endfor %}
@@ -47,7 +47,7 @@
                     <h3>Pending requests:</h3>
                     {% for u in allusers | selectattr('status','equalto','pending') %}
                         <li>
-                            {{ u['name'] }} ({{ u['email'] }})
+                            {{ u['fname']+' '+u['lname'] }} ({{ u['email'] }})
                             <a class="btn green" 
                                 href="/admin/accept/{{ u['id'] }}">accept</a>
                             <a class="btn communist" 
