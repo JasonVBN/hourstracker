@@ -26,6 +26,7 @@
     <!-- <h2 style='text-align:center;'>(in development; official release Thurs 7/24)</h2> -->
 
     <div class="container">
+        <img src="/static/monkey1.png" alt="Monkey" style="display:block; max-height: 80px;">
         {% if not user %}
             <a class="btn" href="/login">Log in / Register</a>
         {% else %}
@@ -68,7 +69,7 @@
     <div class="container">
         <h2>Submit attendance:</h2>
         {% if user %}
-            <form action="/entry" method="post" enctype="multipart/form-data">
+            <form action="/entry" method="post" enctype="multipart/form-data" id="attendance-form">
                 <select name="event_id" id="event-select" required>
                     <option value="" disabled selected>Select an event</option>
                     {% for e in events %}
@@ -158,6 +159,8 @@
 
 <script>
 
+monkeyRain();
+
 // Show/hide proofdoc-div based on selected event's needproof
 const eventSelect = document.getElementById('event-select');
 const proofDiv = document.getElementById('proofdoc-div');
@@ -195,6 +198,43 @@ fileInput.addEventListener('change', () => {
         }
     }
 });
+
+// Monkey rain on attendance form submit
+document.getElementById('attendance-form').addEventListener('submit', function(e) {
+    // Start monkey rain
+    monkeyRain();
+    // Let the form submit after a short delay for effect
+    setTimeout(() => {
+        this.submit();
+    }, 1200);
+    e.preventDefault();
+});
+
+function monkeyRain() {
+    const monkeyUrl = "/static/monkey2.webp";
+    const count = 20;
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const img = document.createElement('img');
+            img.src = monkeyUrl;
+            img.alt = "Monkey";
+            img.style.position = 'fixed';
+            img.style.left = Math.random() * 90 + 'vw';
+            img.style.top = '-80px';
+            img.style.width = '100px';
+            img.style.zIndex = 9999;
+            img.style.pointerEvents = 'none';
+            img.style.transition = 'top 1s ease-in';
+            document.body.appendChild(img);
+            setTimeout(() => {
+                img.style.top = '100vh';
+            }, 10);
+            setTimeout(() => {
+                img.remove();
+            }, 1100);
+        }, i * 60);
+    }
+}
 
 </script>
 </html>

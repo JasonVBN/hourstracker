@@ -181,8 +181,8 @@ def new_event():
     addevent(code, name, hours, date, desc, needproof)
     return redirect('/events')
 
-@app.route('/events/edit/<int:id>', methods=['POST'])
-def edit_event(id: int):
+@app.route('/events/edit/<string:id>', methods=['POST'])
+def edit_event(id: str):
     name = request.form.get('event_name')
     hours = float(request.form.get('hours') or 0)
     date = request.form.get('date') or None
