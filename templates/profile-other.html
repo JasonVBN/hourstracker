@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="/static/navbar.css">
 </head>
 <body>
-    <div class="container">
-        <p>Name: {{ name }}</p>
-        <p>Bio:</p>
-        <p id="bio-text">{{ bio|replace('\n', '<br>')|safe }}</p>
+    <div class="container" style="max-width: 350px;">
+        <h2>{{ name }}</h2>
+        <h3>Bio:</h3>
+        <div style="background:#f6f8fa; padding:16px; border-radius:8px; min-height:48px;">
+            {{ bio|replace('\n', '<br>')|safe }}
+        </div>
     </div>
 
     <!-- NAV BAR -->
