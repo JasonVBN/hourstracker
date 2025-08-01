@@ -32,13 +32,33 @@
     tr:hover {
         background: #eaf6ff;
     }
+
+    .sort-btn{
+        margin-left:6px;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        vertical-align: middle;
+        font-size: 1.2em;
+        color: black;
+        transition: color 0.2s;
+    }
+    .sort-btn:hover {
+        background: #e5e7eb;
+        color: black;
+    }
     </style>
 </head>
 <body>
     <h2 style='text-align:center;'>All Members</h2>
     <table>
         <tr>
-            <th>First Name</th>
+            <th>First Name 
+                <button id="sort-fname-btn" aria-label="Sort by first name" class="sort-btn">
+                    ⇅
+                </button>
+            </th>
             <th>Last Name</th>
             <th>Student ID</th>
             <th>Role</th>
@@ -54,6 +74,30 @@
             </tr>
         {% endfor %}
     </table>
+
+    <script>
+    // Sort table by first name
+    document.getElementById('sort-fname-btn').onclick = function() {
+        const table = document.querySelector('table');
+        const tbody = table.tBodies[0] || table;
+        const rows = Array.from(tbody.querySelectorAll('tr')).slice(1); // skip header
+        let asc = this.dataset.asc === "true" ? false : true;
+        this.dataset.asc = asc;
+
+        rows.sort((a, b) => {
+            const nameA = a.cells[0].textContent.trim().toLowerCase();
+            const nameB = b.cells[0].textContent.trim().toLowerCase();
+            if (nameA < nameB) return asc ? -1 : 1;
+            if (nameA > nameB) return asc ? 1 : -1;
+            return 0;
+        });
+
+        // Re-append sorted rows
+        for (const row of rows) {
+            tbody.appendChild(row);
+        }
+    };
+    </script>
 
     <!-- NAV BAR -->
     <button id="nav-toggle" class="nav-toggle">☰</button>
