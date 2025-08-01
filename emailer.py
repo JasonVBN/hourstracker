@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+from log import log
+
 def send_email(to_addr, subject, content):
     msg = EmailMessage()
     msg['Subject'] = subject
@@ -14,3 +16,4 @@ def send_email(to_addr, subject, content):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login("abcdef13566@gmail.com", os.getenv('EMAIL_APP_PASS'))
         smtp.send_message(msg)
+        log(f"[emailer/send_email] Email sent to {to_addr} with subject '{subject}'")

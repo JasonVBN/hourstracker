@@ -13,4 +13,7 @@
 - DONE! preserve navbar state
 - DONE! fix issue: variable-time entries showing as 0 in My Hours
 - DONE! *important* protect admin-only routes
-- option to enable email notifs
+- DONE! option to enable email notifs
+
+Possible sources of future errors:
+- session.userinfo not matching database after a setting update

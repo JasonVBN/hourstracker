@@ -6,12 +6,20 @@
     <title>Profile</title>
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/navbar.css">
+    <link rel="stylesheet" href="/static/slideswitch.css">
 </head>
 <body>
     <div class="container">
         <p>Name: {{ session['userinfo'].get('fname') + ' ' + session['userinfo'].get('lname') }}</p>
         <p>Role: {{ session['userinfo'].get('role') }} <a href="/admin/request">[Change]</a></p>
         <p>Email: {{ session['userinfo'].get('email') }}</p>
+        
+        <label class="switch" id="notif-switch">
+            <input type="checkbox" id="email-notify-toggle">
+            <span class="slider"></span>
+        </label>
+        <span style="margin-left:12px;vertical-align:middle;">Email notifications</span>
+        
         <p>Bio: <a href="#" id="edit-bio-link">[Edit]</a></p>
         <p id="bio-text">
             {{ session['userinfo']['bio']|replace('\n', '<br>')|safe }}</p>
@@ -27,6 +35,26 @@
         document.getElementById('bio-text').style.display = 'none';
         document.getElementById('bio-form').style.display = 'block';
         this.style.display = 'none';
+    };
+
+    document.getElementById('email-notify-toggle').checked = {{ 'true' if session['userinfo'].get('notifs') else 'false' }};
+    document.getElementById('email-notify-toggle').onchange = function() {
+        const isChecked = this.checked;
+        fetch('/profile/editnotif', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notify: isChecked })
+        }).then(response => {
+            if (!response.ok) {
+                console.error('Failed to update notification preference');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        }).then(
+            () => {
+                window.location.href = '/profile'; // Refresh the page to reflect changes
+            }
+        );
     };
     </script>
 
@@ -53,10 +81,17 @@
     document.getElementById('nav-toggle').onclick = function() {
         var navbar = document.getElementById('navbar');
         navbar.classList.toggle('collapsed');
-        // document.querySelectorAll('.container').forEach(function(c) {
-        //     c.style.marginLeft = navbar.classList.contains('collapsed') ? '60px' : '220px';
-        // });
+        // Save state
+        localStorage.setItem('navbarCollapsed', navbar.classList.contains('collapsed') ? '1' : '0');
     };
+    window.addEventListener('DOMContentLoaded', function() {
+        var navbar = document.getElementById('navbar');
+        if (localStorage.getItem('navbarCollapsed') === '1') {
+            navbar.classList.add('collapsed');
+        } else {
+            navbar.classList.remove('collapsed');
+        }
+    });
     </script>
     <!-- END OF NAV BAR -->
 </body>

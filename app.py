@@ -9,7 +9,7 @@ import requests
 import io
 import openpyxl
 import uuid
-from datetime import datetime
+from log import log
 import time
 from dotenv import load_dotenv
 import os
@@ -30,13 +30,10 @@ oauth.register(
   client_kwargs={'scope': 'openid email'}
 )
 
-def log(msg):
-    with open('log.txt', 'a') as f:
-        f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] {msg}\n")
 
 @app.route('/')
 def index():
-    log(f'index visited from {request.remote_addr}')
+    log(f"index visited from {request.headers.get('X-Forwarded-For')}")
     log(session)
 
     res, totals = [], []
@@ -90,7 +87,7 @@ def kick(id: int):
 @app.route('/entry', methods=['POST'])
 def entry():
     event_id = request.form.get('event_id')
-    hours = request.form.get('hours')
+    hours = request.form.get('hours') or 0
 
     mimetype, data = None, None
     file = request.files.get('proofdoc')
@@ -139,6 +136,7 @@ def pending_entries():
                             JOIN users ON en.user_id = users.id
                             WHERE en.status != 'pending' """)
     t2 = time.time()
+    log(f'entries page visited by {session.get("email")}')
     return render_template('entries.html',
             pending_entries=pending_list,
             past_entries=past_list,
@@ -149,12 +147,32 @@ def pending_entries():
 def approve_entry(id: int):
     print(f"[app/approve_entry] Approving entry ID: {id}")
     runquery("UPDATE entries SET status = 'approved' WHERE id = %s", (id,))
+    
+    info = runquery("""SELECT hours, users.email, users.notifs 
+                FROM entries
+                JOIN users ON users.id = entries.user_id
+                WHERE entries.id = %s""", (id,))[0]
+    if info['notifs']:
+        send_email(info['email'],
+            "Submission approved",
+            f"""Your entry of {info['hours']} hours has been approved!
+            (this is an automated message, but you can still reply)""")
     return redirect('/entries/pending')
 
 @app.route('/entries/deny/<int:id>')
 def deny_entry(id: int):
     print(f"[app/deny_entry] Denying entry ID: {id}")
     runquery("UPDATE entries SET status = 'denied' WHERE id = %s", (id,))
+
+    info = runquery("""SELECT hours, users.email, users.notifs 
+                FROM entries
+                JOIN users ON users.id = entries.user_id
+                WHERE entries.id = %s""", (id,))[0]
+    if info['notifs']:
+        send_email(info['email'],
+            "Submission denied",
+            f"""Your entry of {info['hours']} hours has been denied :(
+            (this is an automated message, but you can still reply)""")
     return redirect('/entries/pending')
 
 @app.route('/events')
@@ -164,6 +182,7 @@ def events():
     if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
         return render_template("badboi.html")
     
+    log(f'events page visited by {session.get("email")}')
     return render_template('events.html',
                            events=getallevents(),
     )
@@ -179,6 +198,7 @@ def new_event():
     if not code:
         code = str(uuid.uuid4())
     addevent(code, name, hours, date, desc, needproof)
+    log(f'new event created by {session.get("email")}')
     return redirect('/events')
 
 @app.route('/events/edit/<string:id>', methods=['POST'])
@@ -330,7 +350,7 @@ def exportxlsx():
 
 @app.route('/login')
 def login():
-    log(f'/login from {request.remote_addr}')
+    log(f"/login from {request.headers.get('X-Forwarded-For')}")
     # redirect_uri = url_for('authorize', _external=True)
     redirect_uri = os.getenv('INDEX_URL') + 'authorize'
     print(f'Redirect URI: {redirect_uri}')
@@ -388,6 +408,14 @@ def editbio():
              (new_bio, session['email']))
     session['userinfo'] = getuserinfo(session['email'])
     return redirect('/profile')
+
+@app.route('/profile/editnotif', methods=['POST'])
+def editnotif():
+    new_notif = request.json.get('notify')
+    runquery("UPDATE users SET notifs = %s WHERE email = %s", 
+             (new_notif, session['email']))
+    session['userinfo'] = getuserinfo(session['email'])
+    return jsonify({"success": True, "notify": new_notif})
 
 @app.route('/profile/<int:id>')
 def profile(id: int):
