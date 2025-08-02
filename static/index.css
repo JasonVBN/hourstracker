@@ -58,7 +58,7 @@ button, input[type="submit"], a.btn {
 }
 button:hover, input[type="submit"]:hover, a.btn:hover, a.btn:focus {
     background: #1d4ed8;
-    color: #fff !important;
+    color: #fff; /* removed !important */
     text-decoration: none;
 }
 li {
