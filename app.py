@@ -1,5 +1,5 @@
 from flask import (Flask, render_template, redirect, url_for, jsonify,
-                   session, request, send_file, make_response)
+                   session, request, send_file, make_response, send_from_directory)
 from authlib.integrations.flask_client import OAuth
 from db import *
 # from qr import *
@@ -424,6 +424,11 @@ def profile(id: int):
                            name=user['fname']+' '+user['lname'],
                            bio=user['bio'],
     )
+
+@app.route('/ads.txt')
+def ads():
+    return send_from_directory('static', 'ads.txt')
+
 
 if __name__ == '__main__':
     app.run(port=5000, 
