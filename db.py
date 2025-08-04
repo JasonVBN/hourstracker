@@ -129,5 +129,8 @@ def seetables():
     for table in cursor.fetchall():
         print(table)
 
+def auditlog(action: str):
+    runquery("INSERT INTO log (action) VALUES (%s)", (action,))
+
 if __name__ == '__main__':
     seetables()

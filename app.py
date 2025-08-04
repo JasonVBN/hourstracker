@@ -77,11 +77,12 @@ def adminrequest():
 @app.route('/admin/kick/<int:id>')
 def kick(id: int):
     runquery("UPDATE users SET status = 'denied' WHERE id = %s", (id,))
-    email = runquery("SELECT email FROM users WHERE id = %s", (id,))[0]['email']
-    send_email(email,
+    info = runquery("SELECT email, fname, lname FROM users WHERE id = %s", (id,))[0]
+    send_email(info['email'],
         "you've been kicked",
         """you've been kicked from the admin list
         (this is an automated message, but you can still reply)""")
+    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} kicked admin {info['fname']} {info['lname']}")
     return redirect('/')
 
 @app.route('/entry', methods=['POST'])
@@ -199,6 +200,7 @@ def new_event():
         code = str(uuid.uuid4())
     addevent(code, name, hours, date, desc, needproof)
     log(f'new event created by {session.get("email")}')
+    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} created event: {name}")
     return redirect('/events')
 
 @app.route('/events/edit/<string:id>', methods=['POST'])
@@ -219,11 +221,12 @@ def accept(id: int):
     print(f"[app/accept] Accepting admin request for ID: {id}")
     updatestatus(id, 'approved')
 
-    email = runquery("SELECT email FROM users WHERE id = %s", (id,))[0]['email']
-    send_email(email,
+    info = runquery("SELECT email, fname, lname FROM users WHERE id = %s", (id,))[0]
+    send_email(info['email'],
         "you've been approved",
         """you've been approved as an admin!
         (this is an automated message, but you can still reply)""")
+    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} accepted {info['fname']} {info['lname']}'s admin request")
     return redirect('/')
 
 @app.route('/admin/deny/<int:id>')
@@ -231,11 +234,12 @@ def deny(id: int):
     print(f"[app/accept] Denying admin request for ID: {id}")
     updatestatus(id, 'denied')
 
-    email = runquery("SELECT email FROM users WHERE id = %s", (id,))[0]['email']
-    send_email(email,
+    info = runquery("SELECT email, fname, lname FROM users WHERE id = %s", (id,))[0]
+    send_email(info['email'],
         "you've been denied",
         """you've been denied from admin role :(
         (this is an automated message, but you can still reply)""")
+    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} denied {info['fname']} {info['lname']}'s admin request")
     return redirect('/')
 
 @app.route('/admin/request/submit', methods=['POST'])
@@ -251,6 +255,7 @@ def adminrequestsubmit():
     session['userinfo'] = userinfo
     print(f"User info after request: {session['userinfo']}")
     
+    auditlog(f"{fname} {lname} requested admin role")
     return redirect('/')
 
 @app.route('/member/join/submit', methods=['POST'])
@@ -424,6 +429,12 @@ def profile(id: int):
                            name=user['fname']+' '+user['lname'],
                            bio=user['bio'],
     )
+
+@app.route('/auditlog')
+def alogpage():
+    alog = runquery("""SELECT action, timestamp FROM log 
+                    ORDER BY timestamp DESC""")
+    return render_template('auditlog.html', alog=alog)
 
 @app.route('/ads.txt')
 def ads():

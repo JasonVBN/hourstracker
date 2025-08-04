@@ -185,6 +185,7 @@
                     <th>Name</th>
                     <th>Date</th>
                     <th>Hours</th>
+                    <th>Status</th>
                     <th>QR code</th>
                 </tr>
                 {% for ev in events %}
@@ -192,6 +193,7 @@
                     <td><strong>{{ ev['name'] }}</strong></td>
                     <td>{{ ev['date'] }}</td>
                     <td>{{ ev['hours'] if ev['hours'] else 'varying' }}</td>
+                    <td>{{ 'active' if ev['active'] else 'inactive'}}</td>
                     <td>
                         <button class="getqr-btn" data-event-id="{{ ev['id'] }}" onclick="showqr(event, this.dataset.eventId)">Check-in QR code</button>
                     </td>
@@ -256,6 +258,7 @@
             <li><a href="/entries/pending">Pending Entries</a></li>
             <li><a href="/roster">Roster</a></li>
             <li><a href="/export">Export Data</a></li>
+            <li><a href="/auditlog">Audit Log</a></li>
         </ul>
         {% endif %}
     </div>

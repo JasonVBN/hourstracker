@@ -2,7 +2,7 @@ body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f6f8fa;
     margin: 0;
-    padding: 0;
+    padding: 10px;
 }
 .container, .newevent, form {
     background: #fff;

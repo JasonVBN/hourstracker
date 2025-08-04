@@ -10,6 +10,7 @@
 </head>
 <body>
     <div class="container">
+        <img src="/static/monkey1.png" alt="Monkey" style="display:block; max-height: 80px;">
         <p>Name: {{ session['userinfo'].get('fname') + ' ' + session['userinfo'].get('lname') }}</p>
         <p>Role: {{ session['userinfo'].get('role') }} <a href="/admin/request">[Change]</a></p>
         <p>Email: {{ session['userinfo'].get('email') }}</p>
@@ -74,6 +75,7 @@
             <li><a href="/entries/pending">Pending Entries</a></li>
             <li><a href="/roster">Roster</a></li>
             <li><a href="/export">Export Data</a></li>
+            <li><a href="/auditlog">Audit Log</a></li>
         </ul>
         {% endif %}
     </div>
