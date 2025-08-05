@@ -436,6 +436,14 @@ def alogpage():
                     ORDER BY timestamp DESC""")
     return render_template('auditlog.html', alog=alog)
 
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
 @app.route('/ads.txt')
 def ads():
     return send_from_directory('static', 'ads.txt')

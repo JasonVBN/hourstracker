@@ -2,7 +2,7 @@ body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f6f8fa;
     margin: 0;
-    padding: 10px;
+    padding: 0px;
 }
 .container, .newevent, form {
     background: #fff;
@@ -28,7 +28,7 @@ form {
     flex-direction: column;
     gap: 16px;
 }
-input[type="text"], input[type="date"], input[type="number"], textarea {
+input, textarea {
     padding: 8px 10px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
