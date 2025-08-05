@@ -440,6 +440,13 @@ def alogpage():
 def contact():
     return render_template('contact.html')
 
+@app.route('/contact/submit', methods=['POST'])
+def contactsub():
+    name = request.form.get('name')
+    msg = request.form.get('message')
+    log(f"{name} submitted Contact form: {msg}")
+    return redirect('/contact')
+
 @app.route('/privacy')
 def privacy():
     return render_template('privacy.html')

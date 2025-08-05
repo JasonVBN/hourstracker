@@ -67,7 +67,7 @@ li {
 label {
     font-size: 0.98rem;
     color: #333;
-    margin-bottom: 4px;
+    /* margin-bottom: 4px; */
 }
 a.btn.green{
     background: #60e542;
