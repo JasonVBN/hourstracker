@@ -9,6 +9,8 @@
      crossorigin="anonymous"></script>
 
     <title>Hours Tracker</title>
+    <link rel="icon" type="image/png" href="/static/CLHS_Falcons.png">
+
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/navbar.css">
     <style>
@@ -38,9 +40,9 @@
         {% if not user %}
             <a class="btn" href="/login">Log in / Register</a>
         {% else %}
-            <p>Logged in as: {{ user['email'] }}</p>
-            <a class="btn" href="/profile">Profile</a>
-            <a class="btn" href="/logout">Logout</a>
+            <p style="margin:0">Logged in as: {{ user['email'] }}
+                <a class="btn communist" href="/logout">Logout</a>
+            </p>
 
             {% if user['role']=='admin' %}
                 <h2>Admins:</h2>
