@@ -17,7 +17,7 @@
         overflow: hidden;
     }
     th, td {
-        padding: 14px 18px;
+        padding: 4px 18px;
         text-align: left;
     }
     th {
@@ -49,7 +49,32 @@
         background: #e5e7eb;
         color: black;
     }
+
+    .kick{
+        background-color: #ff7a7a;
+        margin-left: 8px;
+        min-width: 0;
+    }
     </style>
+
+    <script>
+        function kickmember(userId) {
+            if (confirm("U sure?")) {
+                msg = prompt("(optional) Reason for kicking this member:");
+                fetch(`/roster/kick/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: msg })
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("Something went wrong - failed to kick member :(");
+                    }
+                });
+            }
+        }
+    </script>
 </head>
 <body>
     <h2 style='text-align:center;'>All Members</h2>
@@ -66,6 +91,7 @@
                 <button id="sort-role-btn" aria-label="Sort by role" class="sort-btn">⇅</button>
             </th>
             <th>Status</th>
+            <th></th>
         </tr>
         {% for u in users %}
             <tr>
@@ -74,6 +100,7 @@
                 <td>{{ u['sid'] }}</td>
                 <td>{{ u['role'] }}</td>
                 <td>{{ u['status'] }}</td>
+                <td><button class="kick" onclick="kickmember( {{u['id']}} )">remove</button></td>
             </tr>
         {% endfor %}
     </table>

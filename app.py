@@ -280,6 +280,23 @@ def roster():
     return render_template('roster.html', 
                            users=users)
 
+@app.route('/roster/kick/<int:id>', methods=['POST'])
+def kickmember(id: int):
+    reason = request.json.get('reason')
+    info = runquery("""SELECT email, fname, lname FROM users
+             WHERE id = %s""", (id,))[0]
+    runquery("""DELETE FROM entries WHERE user_id = %s""", (id,))
+    runquery("""DELETE FROM users WHERE id = %s""", (id,))
+    send_email(info['email'],
+        "You've been removed",
+        f"""You've been removed from the roster :(
+        Reason: {reason if reason else 'No reason provided'}
+        If you think this is a mistake, reply to this email or rejoin.
+        (this is an automated message)""")
+    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} "
+             f"kicked user {info['fname']} {info['lname']}")
+    return jsonify({"success": True})
+
 @app.route('/profile')
 def myprofile():
     if 'userinfo' not in session:
