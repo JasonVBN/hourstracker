@@ -6,11 +6,31 @@
     <title>Export Data</title>
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/navbar.css">
+
+    <script>
+        function gsheetUpdate() {
+            const status = document.getElementById("status");
+            status.innerText = "Processing...";
+            fetch("/export/gdrive")
+                .then(response => {
+                    // alert(response.status);
+                    if (response.ok) {
+                        status.innerHTML = "Google Drive spreadsheet updated successfully!";
+                    } else {
+                        status.innerHTML = "Something went wrong D: wait 1 minute and try again. If still fails, complain to jason";
+                    }
+                });
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h3>Download full record (only approved hours):</h3>
-        <a href="/export/xlsx">Excel spreadsheet (.XLSX)</a>
+        <a class="btn" href="/export/xlsx">Excel spreadsheet (.XLSX)</a>
+        <p></p>
+        <h3>Update spreadsheet in MNHS google drive:</h3>
+        <a class="btn" href="#" onclick="gsheetUpdate()">Update</a>
+        <p id="status"></p>
     </div>
 
     <!-- NAV BAR -->
@@ -37,10 +57,17 @@
     document.getElementById('nav-toggle').onclick = function() {
         var navbar = document.getElementById('navbar');
         navbar.classList.toggle('collapsed');
-        // document.querySelectorAll('.container').forEach(function(c) {
-        //     c.style.marginLeft = navbar.classList.contains('collapsed') ? '60px' : '220px';
-        // });
+        // Save state
+        localStorage.setItem('navbarCollapsed', navbar.classList.contains('collapsed') ? '1' : '0');
     };
+    window.addEventListener('DOMContentLoaded', function() {
+        var navbar = document.getElementById('navbar');
+        if (localStorage.getItem('navbarCollapsed') === '1') {
+            navbar.classList.add('collapsed');
+        } else {
+            navbar.classList.remove('collapsed');
+        }
+    });
     </script>
     <!-- END OF NAV BAR -->
 </body>

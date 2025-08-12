@@ -2,6 +2,8 @@ from flask import Blueprint, session, render_template, redirect, send_file
 import openpyxl
 from db import *
 import io
+import pygsheets
+from datetime import datetime
 
 export_bp = Blueprint('export', __name__)
 
@@ -66,3 +68,71 @@ def exportxlsx():
         download_name="hoursdata.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+
+@export_bp.route('/export/gdrive')
+def updategdrive():
+    print("-- updating gdrive spreadsheet --")
+    try:
+        gc = pygsheets.authorize(service_file=os.getenv('SERVACCT_KEY'))
+        spreadsheet = gc.open_by_key(os.getenv('GSHEET_ID'))
+        
+        tab_title = f'Ver. {datetime.now().strftime("%b%d %H:%M")}'
+        try:
+            existing_tab = spreadsheet.worksheet_by_title(tab_title)
+            spreadsheet.del_worksheet(existing_tab)
+            print(f"Deleted existing tab: {existing_tab.title}")
+        except:
+            pass
+        tab = spreadsheet.add_worksheet(tab_title)
+        print(f"Created tab: {tab.title} at {tab.url}")
+
+        events = runquery('''SELECT id, name, date
+                        FROM events''')
+
+        rows = []
+
+        columnidx = {}
+        r1 = ["First Name", "Last Name", "Student ID", "Email", "TOTAL HOURS"]
+        r2 = ["", "", "", "", ""]
+        for ev in events:
+            r1.append(ev['name'])
+            r2.append(str(ev['date']))
+            columnidx[ev['id']] = len(r1) - 1  # Store the index of the event in the header row
+        rows.append(r1)
+        rows.append(r2)
+        users = runquery('''SELECT id, fname, lname, sid, email FROM users''')
+
+        data = {u['id'] : [u['fname'], u['lname'], u['sid'], u['email'], 0] + [0]*len(events) for u in users}
+        # userid : [fname, lname, sid, email, ...]
+        print(data)
+        entries = runquery('''
+                        SELECT * FROM entries 
+                        WHERE status="approved"
+                        ''')
+        # optimize: only select needed fields
+        
+        for en in entries:
+            uid = en['user_id']
+            event_id = en['event_id']
+            data[uid][4] += en['hours']
+            if event_id in columnidx:
+                col_idx = columnidx[event_id]
+                data[uid][col_idx] += en['hours']
+        
+        # write data to worksheet
+        for uid in data:
+            rows.append(['' if x==0 else x for x in data[uid]])
+
+        # tab.append_table(rows, start='A1', dimension='ROWS', end=None)
+        next_row = 1
+        for row in rows:
+            tab.insert_rows(row=next_row, number=1, values=row)
+            next_row += 1
+        # very slow rn - needs optimization
+
+        return {}, 200
+    except Exception as e:
+        print(f"Error updating Google Drive spreadsheet: {e}")
+        return {}, 500
+    
