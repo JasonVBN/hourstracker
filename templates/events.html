@@ -45,44 +45,26 @@
             cursor: pointer;
         }
 
-
-        .help-icon {
-        display: inline-block;
-        margin-left: 6px;
-        background: #2563eb;
-        color: #fff;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        text-align: center;
-        font-size: 13px;
-        line-height: 18px;
-        cursor: pointer;
-        position: relative;
-    }
-    .help-tooltip {
-        display: none;
-        position: absolute;
-        left: 24px;
-        top: 0;
-        background: #fff;
-        color: #222;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        padding: 10px 16px;
-        width: 240px;
-        z-index: 10;
-        font-size: 0.95em;
-    }
-    .help-icon:hover .help-tooltip,
-    .help-icon:focus .help-tooltip {
-        display: block;
-    }
+        .trash-btn {
+            background: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #999;
+            transition: color 0.2s;
+        }
+        .trash-btn:hover {
+            color: #f00000;
+        }
+        .help-icon:hover .help-tooltip,
+        .help-icon:focus .help-tooltip {
+            display: block;
+        }
     </style>
 
     <!-- QRCode.js: -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- for trash icon: -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
         // Build eventsData as a JS object using Jinja2 inside a <script> tag
@@ -140,6 +122,24 @@
             document.getElementById('popup-bg').classList.add('active');
             document.getElementById('popup2').classList.add('active');
         }
+
+        function deleteEvent(clickevent, id){
+            if (clickevent) clickevent.stopPropagation();
+            if (confirm("U sure you wanna delete this event?")) {
+                if (confirm("U *really* sure??? All hours associated with this event will go poof. This action is irreversible.")) {
+                    fetch('/events/delete/' + id, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(response => {
+                        if (response.ok) {
+                            window.location.reload(); // Refresh the page to reflect changes
+                        } else {
+                            alert('Failed to delete event. Please try again later.');
+                        }
+                    })
+                }
+            }
+        }
     </script>
 </head>
 <body>
@@ -196,6 +196,9 @@
                     <td>{{ 'active' if ev['active'] else 'inactive'}}</td>
                     <td>
                         <button class="getqr-btn" data-event-id="{{ ev['id'] }}" onclick="showqr(event, this.dataset.eventId)">Check-in QR code</button>
+                    </td>
+                    <td>
+                        <i class="fas fa-trash trash-btn" onclick="deleteEvent(event, '{{ev['id']}}')" title="Delete"></i>
                     </td>
                 </tr>
                 {% endfor %}

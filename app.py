@@ -22,8 +22,8 @@ oauth.init_app(app)
 
 @app.route('/')
 def index():
-    log(f"index visited from {request.headers.get('X-Forwarded-For')}")
-    log(session)
+    log(f"""index visited from {request.headers.get('X-Forwarded-For')}
+    {session}""")
 
     res, totals = [], []
     if 'email' in session:
@@ -204,6 +204,15 @@ def edit_event(id: str):
     runquery("UPDATE events SET name = %s, hours = %s, date = %s, `desc` = %s, needproof = %s WHERE id = %s",
              (name, hours, date, desc, needproof, id))
     return redirect('/events')
+
+@app.route('/events/delete/<string:id>', methods=['POST'])
+def delete_event(id: str):
+    print(f"[app/delete_event] Deleting event ID: {id}")
+    name = runquery("SELECT name FROM events WHERE id = %s", (id,))[0]['name']
+    runquery("DELETE FROM entries WHERE event_id = %s", (id,))
+    runquery("DELETE FROM events WHERE id = %s", (id,))
+    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} deleted event: {name}")
+    return {}, 200
 
 @app.route('/admin/accept/<int:id>')
 def accept(id: int):
