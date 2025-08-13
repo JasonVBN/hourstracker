@@ -169,12 +169,10 @@
         localStorage.setItem('navbarCollapsed', navbar.classList.contains('collapsed') ? '1' : '0');
     };
     window.addEventListener('DOMContentLoaded', function() {
+        // auto-collapse
         var navbar = document.getElementById('navbar');
-        if (localStorage.getItem('navbarCollapsed') === '1') {
-            navbar.classList.add('collapsed');
-        } else {
-            navbar.classList.remove('collapsed');
-        }
+        navbar.classList.add('collapsed');
+        localStorage.setItem('navbarCollapsed', '1');
     });
     </script>
     <!-- END OF NAV BAR -->
