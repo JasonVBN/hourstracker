@@ -16,10 +16,19 @@
                 {% if event['date'] %} ({{ event['date']}}) {% endif %}
             </option>
         </select>
-        <input type="text" name="name" placeholder="your name" required>
-        <input type="text" name="sid" placeholder="your student ID" maxlength=10 required>
-        make sure your ID is correct, or else your hours might not be logged!
-        <button type="submit" id="submit-btn">Submit</button>
+
+        <label>Hours: 
+            <input id="hours-input" type="number" name="hours" placeholder="Hours" value="{{ event['hours'] }}" readonly>
+        </label>
+
+        {% if user %}
+            <!-- <input type="text" name="name" placeholder="your name" required>
+            <input type="text" name="sid" placeholder="your student ID" maxlength=10 required>
+            make sure your ID is correct, or else your hours might not be logged! -->
+            <button type="submit" id="submit-btn">Submit</button>
+        {% else %}
+            <!-- login -->
+        {% endif %}
     </form>
     <script>
         document.getElementById('submit-btn').addEventListener('click', function(event) {

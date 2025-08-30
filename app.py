@@ -55,9 +55,29 @@ def index():
 # visited only via QR code
 @app.route('/checkin/<string:event_id>')
 def checkin(event_id):
+    if 'email' not in session or 'userinfo' not in session:
+        session['checkin_event_id'] = event_id
+
+        log(f"login from {request.headers.get('X-Forwarded-For')} (redirect to /checkin)")
+        redirect_uri = os.getenv('INDEX_URL') + 'checkin'
+        print(f'Redirect URI: {redirect_uri}')
+        return oauth.oidc.authorize_redirect(redirect_uri) # redirect to /checkin
     return render_template('checkin.html',
                             event=geteventbyid(event_id),
+                            user=session.get('userinfo')
     )
+
+@app.route('/checkin')
+def checkin_gen():
+    token = oauth.oidc.authorize_access_token()
+
+    session['email'] = token['userinfo'].get('email')
+    session['userinfo'] = getuserinfo(session['email'])
+
+    if 'checkin_event_id' not in session:
+        return redirect('/')
+    event_id = session['checkin_event_id']
+    return redirect(f'/checkin/{event_id}' if event_id else '/')
 
 @app.route('/admin/request')
 def adminrequest():
