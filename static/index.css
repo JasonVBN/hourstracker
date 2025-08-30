@@ -28,7 +28,7 @@ form {
     flex-direction: column;
     gap: 16px;
 }
-input, textarea {
+input, textarea, select, option {
     padding: 8px 10px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
