@@ -307,7 +307,22 @@ def roster():
 
     users = runquery('''SELECT * FROM users''')
     return render_template('roster.html', 
-                           users=users)
+                           users=users,
+                           events=getallevents())
+
+@app.route('/roster/addhours', methods=['POST'])
+def addhours():
+    data = request.get_json()
+    event_id = data.get('event_id')
+    user_ids = data.get('user_ids', [])
+    hours = data.get('hours', 0)
+    print(f"[app/addhours] Adding hours for event ID: {event_id} to users: {user_ids}")
+
+    for uid in user_ids:
+        runquery("""INSERT INTO entries (event_id, user_id, hours, status) 
+                 VALUES (%s, %s, %s, 'approved')""",
+                  (event_id, uid, hours))
+    return jsonify({"success": True}), 200
 
 @app.route('/roster/kick/<int:id>', methods=['POST'])
 def kickmember(id: int):
@@ -358,6 +373,10 @@ def profile(id: int):
 
 @app.route('/auditlog')
 def alogpage():
+    if ('email' not in session) or ('userinfo' not in session):
+        return redirect('/login')
+    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
+        return render_template("badboi.html")
     alog = runquery("""SELECT action, timestamp FROM log 
                     ORDER BY timestamp DESC""")
     return render_template('auditlog.html', alog=alog)

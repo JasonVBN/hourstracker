@@ -74,12 +74,66 @@
                 });
             }
         }
+
+        function addhours(){
+            const selectedEvent = document.getElementById('event-select').value;
+            const checkboxes = document.querySelectorAll('input[name="addhours"]:checked');
+            const hours = document.getElementById('hours-input').value;
+            if (checkboxes.length === 0) {
+                alert("Please select at least one member.");
+                return;
+            }
+            const userIds = Array.from(checkboxes).map(cb => cb.value);
+            fetch('/roster/addhours', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event_id: selectedEvent, 
+                    user_ids: userIds, hours: hours })
+            }).then(response => {
+                if (response.ok) {
+                    alert("Hours added successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Failed to add hours.");
+                }
+            });
+        }
+        
     </script>
 </head>
 <body>
     <h2 style='text-align:center;'>All Members</h2>
+    <!-- <div class="container"> -->
+        <form onsubmit="addhours()">
+            <select id="event-select" required>
+                <option disabled selected value="">Pick event:</option>
+                {% for ev in events %}
+                    <option value="{{ ev.id }}" data-hours="{{ ev.hours|float }}">{{ ev.name }}</option>
+                {% endfor %}
+            </select>
+            <input id="hours-input" type="number" placeholder="Hours" step="0.25" required readonly>
+            <button type="submit">Give hours to all selected members</button>
+        </form>
+    <!-- </div> -->
+    <script>
+        const eventSelect = document.getElementById('event-select');
+        const hoursInput = document.getElementById('hours-input');
+        function updateForm() {
+            const selected = eventSelect.options[eventSelect.selectedIndex];
+            if(selected && selected.dataset.hours == 0) {
+                hoursInput.readOnly = false;
+                hoursInput.value = '';
+            } else if(selected) {
+                hoursInput.readOnly = true;
+                hoursInput.value = selected.dataset.hours;
+            }
+        }
+        eventSelect.addEventListener('change', updateForm);
+    </script>
+
     <table>
         <tr>
+            <th></th>
             <th>First Name 
                 <button id="sort-fname-btn" aria-label="Sort by first name" class="sort-btn">⇅</button>
             </th>
@@ -95,6 +149,10 @@
         </tr>
         {% for u in users %}
             <tr>
+                <td>
+                    <input type="checkbox" name="addhours" value="{{u['id']}}"
+                    style="transform: scale(1.5)">
+                </td>
                 <td>{{ u['fname'] }}</td>
                 <td>{{ u['lname'] }}</td>
                 <td>{{ u['sid'] }}</td>
@@ -129,15 +187,15 @@
 
     // Sort table by first name
     document.getElementById('sort-fname-btn').onclick = function() {
-        sort.call(this, 0);
-    };
-
-    document.getElementById('sort-lname-btn').onclick = function() {
         sort.call(this, 1);
     };
 
+    document.getElementById('sort-lname-btn').onclick = function() {
+        sort.call(this, 2);
+    };
+
     document.getElementById('sort-role-btn').onclick = function() {
-        sort.call(this, 3);
+        sort.call(this, 4);
     };
     </script>
 

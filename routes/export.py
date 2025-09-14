@@ -85,6 +85,7 @@ def updategdrive():
         except:
             pass
         tab = spreadsheet.add_worksheet(tab_title)
+        tab.index = 0  # Move new tab to left
         print(f"Created tab: {tab.title} at {tab.url}")
 
         events = runquery('''SELECT id, name, date

@@ -85,7 +85,7 @@
         </tr>
         {% for entry in past_entries %}
             <tr>
-                <td>{{entry['user_fname']}} ({{entry['sid']}})</td>
+                <td>{{entry['user_fname']}} {{entry['user_lname']}} ({{entry['sid']}})</td>
                 <td>{{ entry['event_name'] }}</td>
                 <td>{{ entry['date'] }}</td>
                 <td>{{ entry['hours'] }}</td>
