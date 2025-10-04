@@ -2,6 +2,7 @@ from flask import (Flask, render_template, redirect, url_for, jsonify,
                    session, request, make_response, send_from_directory)
 from routes.auth import auth_bp, oauth
 from routes.export import export_bp
+from routes.events import events_bp
 from db import *
 # from qr import *
 from emailer import send_email
@@ -17,6 +18,7 @@ load_dotenv()
 app = Flask(__name__)
 app.register_blueprint(auth_bp)
 app.register_blueprint(export_bp)
+app.register_blueprint(events_bp)
 app.secret_key = 'hi'
 oauth.init_app(app)
 
@@ -191,55 +193,6 @@ def deny_entry(id: int):
         )
         thr.start()
     return redirect('/entries/pending')
-
-@app.route('/events')
-def events():
-    if ('email' not in session) or ('userinfo' not in session):
-        return redirect('/login')
-    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
-        return render_template("badboi.html")
-    
-    log(f'events page visited by {session.get("email")}')
-    return render_template('events.html',
-                           events=getallevents(),
-    )
-
-@app.route('/events/new', methods=['POST'])
-def new_event():
-    name = request.form.get('event_name')
-    code = request.form.get('code') or None
-    hours = float(request.form.get('hours') or 0)
-    date = request.form.get('date') or None
-    desc = request.form.get('desc') or None
-    needproof = request.form.get('needproof') or 0
-    if not code:
-        code = shortuuid()
-    addevent(code, name, hours, date, desc, needproof)
-    log(f'new event created by {session.get("email")}')
-    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} created event: {name}")
-    return redirect('/events')
-
-@app.route('/events/edit/<string:id>', methods=['POST'])
-def edit_event(id: str):
-    name = request.form.get('event_name')
-    hours = float(request.form.get('hours') or 0)
-    date = request.form.get('date') or None
-    desc = request.form.get('desc') or None
-    needproof = request.form.get('needproof') or 0
-
-    print(f"[app/edit_event] Editing event ID: {id}")
-    runquery("UPDATE events SET name = %s, hours = %s, date = %s, `desc` = %s, needproof = %s WHERE id = %s",
-             (name, hours, date, desc, needproof, id))
-    return redirect('/events')
-
-@app.route('/events/delete/<string:id>', methods=['POST'])
-def delete_event(id: str):
-    print(f"[app/delete_event] Deleting event ID: {id}")
-    name = runquery("SELECT name FROM events WHERE id = %s", (id,))[0]['name']
-    runquery("DELETE FROM entries WHERE event_id = %s", (id,))
-    runquery("DELETE FROM events WHERE id = %s", (id,))
-    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} deleted event: {name}")
-    return {}, 200
 
 @app.route('/admin/accept/<int:id>')
 def accept(id: int):
