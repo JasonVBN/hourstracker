@@ -9,6 +9,7 @@ import requests
 import uuid
 from log import log
 import time
+import threading
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -163,10 +164,13 @@ def approve_entry(id: int):
                 JOIN users ON users.id = entries.user_id
                 WHERE entries.id = %s""", (id,))[0]
     if info['notifs']:
-        send_email(info['email'],
+        thr = threading.Thread(target=send_email, args=(
+            info['email'],
             "Submission approved",
             f"""Your entry of {info['hours']} hours has been approved!
             (this is an automated message, but you can still reply)""")
+        )
+        thr.start()
     return redirect('/entries/pending')
 
 @app.route('/entries/deny/<int:id>')
@@ -179,10 +183,13 @@ def deny_entry(id: int):
                 JOIN users ON users.id = entries.user_id
                 WHERE entries.id = %s""", (id,))[0]
     if info['notifs']:
-        send_email(info['email'],
+        thr = threading.Thread(target=send_email, args=(
+            info['email'],
             "Submission denied",
             f"""Your entry of {info['hours']} hours has been denied :(
             (this is an automated message, but you can still reply)""")
+        )
+        thr.start()
     return redirect('/entries/pending')
 
 @app.route('/events')
