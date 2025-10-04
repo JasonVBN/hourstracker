@@ -213,7 +213,7 @@ def new_event():
     desc = request.form.get('desc') or None
     needproof = request.form.get('needproof') or 0
     if not code:
-        code = str(uuid.uuid4())
+        code = shortuuid()
     addevent(code, name, hours, date, desc, needproof)
     log(f'new event created by {session.get("email")}')
     auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} created event: {name}")
