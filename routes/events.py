@@ -6,7 +6,7 @@ from log import log
 events_bp = Blueprint('events', __name__)
 
 
-@events_bp.route('/events')
+@events_bp.route('/events', methods=['GET'])
 def events():
     if ('email' not in session) or ('userinfo' not in session):
         return redirect('/login')
@@ -26,12 +26,15 @@ def new_event():
     date = request.form.get('date') or None
     desc = request.form.get('desc') or None
     needproof = request.form.get('needproof') or 0
-    if not code:
+    if code:
+        if not all(c.isalnum() or c == '-' for c in code):
+            return {'err': 'Event code must only have alphanumeric (a-z, 0-9) and -'}, 400
+    else:
         code = shortuuid()
     addevent(code, name, hours, date, desc, needproof)
     log(f'new event created by {session.get("email")}')
     auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} created event: {name}")
-    return redirect('/events')
+    return {}, 200
 
 @events_bp.route('/events/edit/<string:id>', methods=['POST'])
 def edit_event(id: str):
