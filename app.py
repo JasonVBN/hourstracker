@@ -241,16 +241,18 @@ def memberjoin():
     fname = request.form.get('fname')
     lname = request.form.get('lname')
     sid = request.form.get('sid')
+    grade = request.form.get('grade')
+    math_class = request.form.get('math_class')
 
     if not (fname and lname and sid):
         return jsonify({"error": "All fields are required"}), 400
 
     # is it safe to assume user still logged in?
-    runquery('''INSERT INTO users (email, fname, lname, sid, status, role) 
-            VALUES (%s, %s, %s, %s, 'approved', 'member')
+    runquery('''INSERT INTO users (email, fname, lname, sid, status, role, grade, mathclass) 
+            VALUES (%s, %s, %s, %s, 'approved', 'member', %s, %s)
             ON DUPLICATE KEY UPDATE
-            fname=VALUES(fname), lname=VALUES(lname), sid=VALUES(sid), status='approved', role='member' ''',
-              (session['email'], fname, lname, sid))
+            fname=VALUES(fname), lname=VALUES(lname), sid=VALUES(sid), status='approved', role='member', grade=VALUES(grade), mathclass=VALUES(mathclass)''',
+              (session['email'], fname, lname, sid, grade, math_class))
 
     userinfo = getuserinfo(session['email'])
     session['userinfo'] = userinfo
