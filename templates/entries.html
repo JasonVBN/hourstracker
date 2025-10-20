@@ -45,11 +45,12 @@
             <th>Date</th>
             <th>Hours</th>
             <th>Doc</th>
+            <th>Submitted</th>
             <th>Decision</th>
         </tr>
         {% for entry in pending_entries %}
             <tr>
-                <td>{{entry['user_fname']}} ({{entry['sid']}})</td>
+                <td>{{entry['user_fname']}} {{entry['user_lname']}} ({{entry['sid']}})</td>
                 <td>{{ entry['event_name'] }}</td>
                 <td>{{ entry['date'] }}</td>
                 <td>{{ entry['hours'] }}</td>
@@ -58,6 +59,7 @@
                         <a href="/entry/proof/{{entry['id']}}" target="_blank">See document</a>
                     {% endif %}
                 </td>
+                <td>{{ entry['submit_time'].strftime("%m/%d %H:%M:%S") }}</td>
                 <td>
                     <a class="btn" style="background-color: #60e542;" 
                         href="/entries/approve/{{ entry['id'] }}">approve</a>

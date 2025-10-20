@@ -136,7 +136,7 @@ def pending_entries():
         return render_template("badboi.html")
     
     t1 = time.time()
-    pending_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status,
+    pending_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status, en.submit_time,
                             events.name AS event_name, events.date,
                             users.fname AS user_fname, users.lname AS user_lname, users.sid
                             FROM entries AS en

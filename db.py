@@ -19,6 +19,7 @@ def runquery(query: str, params=None) -> list:
     try:
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor(dictionary=True)
+        cursor.execute("SET time_zone = 'America/Chicago';");
         cursor.execute(query, params)
         print(f"[db/runquery] Executed query: {query} with params: {params}")
         
