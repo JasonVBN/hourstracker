@@ -3,6 +3,7 @@ from flask import (Flask, render_template, redirect, url_for, jsonify,
 from routes.auth import auth_bp, oauth
 from routes.export import export_bp
 from routes.events import events_bp
+from routes.profile import profile_bp
 from db import *
 # from qr import *
 from emailer import send_email
@@ -19,6 +20,7 @@ app = Flask(__name__)
 app.register_blueprint(auth_bp)
 app.register_blueprint(export_bp)
 app.register_blueprint(events_bp)
+app.register_blueprint(profile_bp)
 app.secret_key = 'hi'
 oauth.init_app(app)
 
@@ -307,6 +309,7 @@ def kickmember(id: int):
 def myprofile():
     if 'userinfo' not in session:
         return redirect('/login')
+    session['userinfo'] = getuserinfo(session['email'])
     return render_template('profile.html')
 
 @app.route('/profile/editbio', methods=['POST'])
@@ -314,7 +317,6 @@ def editbio():
     new_bio = request.form.get('bio')
     runquery("UPDATE users SET bio = %s WHERE email = %s", 
              (new_bio, session['email']))
-    session['userinfo'] = getuserinfo(session['email'])
     return redirect('/profile')
 
 @app.route('/profile/editnotif', methods=['POST'])

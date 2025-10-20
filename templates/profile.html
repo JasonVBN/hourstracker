@@ -7,10 +7,46 @@
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/navbar.css">
     <link rel="stylesheet" href="/static/slideswitch.css">
+
+    <script>
+    async function changePfp(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > 4 * 1024 * 1024) { // 4 MB limit
+            alert('File too large (max of 4MB)');
+            return;
+        }
+        document.getElementById('pfp-spinner').style.display = 'inline-block';
+        const response = await fetch('/profile/changepfp', {
+            method: 'POST',
+            body: new FormData(document.getElementById('pfp-form'))
+        });
+        document.getElementById('pfp-spinner').style.display = 'none';
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const data = await response.json();
+            alert('Failed: ' + data.msg);
+        }
+    }
+    </script>
 </head>
 <body>
     <div class="container">
-        <img src="/static/monkey1.png" alt="Monkey" style="display:block; max-height: 80px;">
+        <img src="{{session['userinfo'].get('pfp') or '/static/monkey1.png'}}" alt="pfp" style="display:block; max-height: 80px;">
+        <form id="pfp-form" style="all:unset;">
+        Change profile pic:
+        <input type="file" id="pfp-upload" name="pfp-upload" accept="image/*" style="" onchange="changePfp(this)">
+        <span id="pfp-spinner" style="display:none; vertical-align:middle;">
+            <svg width="22" height="22" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.4 31.4">
+                    <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.8s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </span>
+        </form>
+        <!-- <button type="button" onclick="document.getElementById('pfp-upload').click();">Upload New Profile Pic</button> -->
+    
         <p>Name: {{ session['userinfo'].get('fname') + ' ' + session['userinfo'].get('lname') }}</p>
         <p>Role: {{ session['userinfo'].get('role') }} <a href="/admin/request">[Change]</a></p>
         <p>Email: {{ session['userinfo'].get('email') }}</p>
@@ -24,7 +60,7 @@
         <p>Bio: <a href="#" id="edit-bio-link">[Edit]</a></p>
         <p id="bio-text">
             {{ session['userinfo']['bio']|replace('\n', '<br>')|safe }}</p>
-        <form id="bio-form" action="/profile/editbio" method="post" style="display:none;">
+        <form id="bio-form" action="/profile/editbio" method="post" style="all:unset; display:none;">
             <textarea name="bio" id="bio" rows="4" placeholder="Add your bio here">{{ session['userinfo'].get('bio') }}</textarea>
             <br>
             <button type="submit">Save</button>
