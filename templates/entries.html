@@ -6,6 +6,7 @@
     <title>Pending entries</title>
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/navbar.css">
+    <link rel="stylesheet" href="/static/sortbtn.css">
     <style>
         table {
             width: 70%;
@@ -33,6 +34,10 @@
         }
         td {
             border-bottom: 1px solid #e5e7eb;
+        }
+
+        .sort-btn {
+            color: white;
         }
     </style>
 </head>
@@ -76,10 +81,12 @@
     </table>
 
     <h2>Past entries:</h2>
-    <table>
+    <table id="past-table">
         <tr>
             <th>Name (student ID)</th>
-            <th>Event</th>
+            <th>Event
+                <button id="sort-event-btn" aria-label="Sort by event" class="sort-btn">⇅</button>
+            </th>
             <th>Date</th>
             <th>Hours</th>
             <th>Doc</th>
@@ -107,6 +114,31 @@
             </tr>
         {% endfor %}
     </table>
+    <script>
+    function sort(colIndex){
+        const table = document.getElementById('past-table');
+        const rows = Array.from(table.querySelectorAll('tr')).slice(1); // skip header
+        let asc = this.dataset.asc === "true" ? false : true;
+        this.dataset.asc = asc;
+
+        rows.sort((a, b) => {
+            const nameA = a.cells[colIndex].textContent.trim().toLowerCase();
+            const nameB = b.cells[colIndex].textContent.trim().toLowerCase();
+            if (nameA < nameB) return asc ? -1 : 1;
+            if (nameA > nameB) return asc ? 1 : -1;
+            return 0;
+        });
+
+        // Re-append sorted rows
+        for (const row of rows) {
+            table.appendChild(row);
+        }
+    }
+
+    document.getElementById('sort-event-btn').onclick = function() {
+        sort.call(this, 1);
+    };
+    </script>
     <p style="text-align:center;">Load time: {{time}} s</p>
 
     <!-- NAV BAR -->
