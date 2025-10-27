@@ -62,8 +62,9 @@ def index():
 # visited only via QR code
 @app.route('/checkin/<string:event_id>')
 def checkin(event_id):
-    print('[checkin]')
+    log(f"checkin page visited by {session.get('email')}")
     if 'email' not in session or 'userinfo' not in session:
+        log('[checkin] not logged in, redirecting to /login')
         session['checkin_redirect'] = True
         session['checkin_event_id'] = event_id
 
@@ -75,7 +76,6 @@ def checkin(event_id):
         # return redirect('/login')
 
         # user manually clicks 'login' to redirect to /login
-    print(f"[checkin] userinfo: {session.get('userinfo')}")
     return render_template('checkin.html',
                             event=geteventbyid(event_id),
                             user=session.get('userinfo')
@@ -367,6 +367,11 @@ def contactsub():
     msg = request.form.get('message')
     log(f"{name} submitted Contact form: {msg}")
     return redirect('/contact')
+
+@app.route('/greed')
+def greed():
+    return render_template('greed.html',
+        user=session.get('userinfo'),)
 
 @app.route('/privacy')
 def privacy():

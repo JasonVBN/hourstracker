@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="/static/navbar.css">
+    
+    <title>Greed Control</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Greed control</h2>
+        <h3 style="text-align:center">(just for fun)</h3>
+
+        <p>Rules: Pick a number from 1-30. The number of points you get is your number divided by 
+            number of players who picked that number.
+            Example: if you picked 24 and 2 other people also picked 24, you get 24/3=8 points.
+        </p>
+
+        <p>Coming up soon! Will release by this Thurs 10/30</p>
+
+        <p>(inspired by similar game on AoPS)</p>
+    </div>
+
+    <!-- NAV BAR -->
+    <button id="nav-toggle" class="nav-toggle">☰</button>
+    <div id="navbar" class="navbar">
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            {% if user %}
+                <li><a href="/profile">Profile</a></li>
+                <li><a href="/logout">Logout</a></li>
+            {% else %}
+                <li><a href="/login">Log in / Register</a></li>
+            {% endif %}
+            <li class="current"><a href="/greed">Greed Control</a></li>
+        </ul>
+        {% if user['role']=='admin' and user['status']=='approved' %}
+        <ul class="nav-links">
+            <h2 class="nav-header">ADMIN ZONE:</h2>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/entries/pending">Pending Entries</a></li>
+            <li><a href="/roster">Roster</a></li>
+            <li><a href="/export">Export Data</a></li>
+            <li><a href="/auditlog">Audit Log</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    <script>
+    document.getElementById('nav-toggle').onclick = function() {
+        var navbar = document.getElementById('navbar');
+        navbar.classList.toggle('collapsed');
+        // Save state
+        localStorage.setItem('navbarCollapsed', navbar.classList.contains('collapsed') ? '1' : '0');
+    };
+    window.addEventListener('DOMContentLoaded', function() {
+        var navbar = document.getElementById('navbar');
+        if (localStorage.getItem('navbarCollapsed') === '1') {
+            navbar.classList.add('collapsed');
+        } else {
+            navbar.classList.remove('collapsed');
+        }
+    });
+    </script>
+    <!-- END OF NAV BAR -->
+</body>
+</html>
