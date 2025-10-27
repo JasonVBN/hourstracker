@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/index.css">
 </head>
 <body>
+    <a href="/">Back home</a>
     <form action="/entry" method="post">
         <h2>Submit attendance</h2>
         <!-- <h3>{{event['name']}}</h3> -->
@@ -28,6 +29,7 @@
             <button type="submit" id="submit-btn">Submit</button>
         {% else %}
             <!-- login -->
+            <p>Pls <a href="/login">login/register</a> to check-in</p>
         {% endif %}
     </form>
     <script>

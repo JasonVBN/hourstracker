@@ -4,6 +4,7 @@ from routes.auth import auth_bp, oauth
 from routes.export import export_bp
 from routes.events import events_bp
 from routes.profile import profile_bp
+from routes.entries import entries_bp
 from db import *
 # from qr import *
 from emailer import send_email
@@ -21,6 +22,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(export_bp)
 app.register_blueprint(events_bp)
 app.register_blueprint(profile_bp)
+app.register_blueprint(entries_bp)
 app.secret_key = 'hi'
 oauth.init_app(app)
 
@@ -60,13 +62,20 @@ def index():
 # visited only via QR code
 @app.route('/checkin/<string:event_id>')
 def checkin(event_id):
+    print('[checkin]')
     if 'email' not in session or 'userinfo' not in session:
+        session['checkin_redirect'] = True
         session['checkin_event_id'] = event_id
 
-        log(f"login from {request.headers.get('X-Forwarded-For')} (redirect to /checkin)")
-        redirect_uri = os.getenv('INDEX_URL') + 'checkin'
-        print(f'Redirect URI: {redirect_uri}')
-        return oauth.oidc.authorize_redirect(redirect_uri) # redirect to /checkin
+        # log(f"login from {request.headers.get('X-Forwarded-For')} (redirect to /checkin)")
+        # redirect_uri = os.getenv('INDEX_URL') + 'checkin'
+        # print(f'Redirect URI: {redirect_uri}')
+        # return oauth.oidc.authorize_redirect(redirect_uri) # redirect to /checkin
+
+        # return redirect('/login')
+
+        # user manually clicks 'login' to redirect to /login
+    print(f"[checkin] userinfo: {session.get('userinfo')}")
     return render_template('checkin.html',
                             event=geteventbyid(event_id),
                             user=session.get('userinfo')
@@ -260,6 +269,9 @@ def memberjoin():
     session['userinfo'] = userinfo
     print(f"User info after join: {session['userinfo']}")
     
+    if (session.get('checkin_redirect', 0) and
+            'checkin_event_id' in session):
+        return redirect(f"/checkin/{session['checkin_event_id']}")
     return redirect('/')
 
 @app.route('/roster')
