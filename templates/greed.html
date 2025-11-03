@@ -8,6 +8,24 @@
     <link rel="stylesheet" href="/static/navbar.css">
     
     <title>Greed Control</title>
+
+    <script>
+        async function go(){
+            const response = await fetch('/greed/submit', {
+                method: 'POST',
+                headers: {
+                    'method': 'POST'
+                },
+                body: new FormData(document.querySelector('form'))
+            });
+            if(!response.ok){
+                const data = await response.json();
+                alert("Error: " + data.msg);
+            } else {
+                alert("Submission recorded!");
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -19,8 +37,15 @@
             Example: if you picked 24 and 2 other people also picked 24, you get 24/3=8 points.
         </p>
 
-        <p>Coming up soon! Will release by this Thurs 10/30</p>
-
+        <form onsubmit="event.preventDefault(); go();">
+            <label for="pick">Your pick (1-30): </label>
+            <input type="number" id="pick" name="pick" min="1" max="30" required>
+            <input type="submit" value="Submit">
+        </form>
+        <p>Current game will end at {{today}} @ 11:59pm</p>
+        <p>Yesterday's results: You got {{yday_pts}} points</p>
+        <p>(leaderboard coming soon)</p>
+        <br>
         <p>(inspired by similar game on AoPS)</p>
     </div>
 

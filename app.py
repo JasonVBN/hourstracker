@@ -5,6 +5,7 @@ from routes.export import export_bp
 from routes.events import events_bp
 from routes.profile import profile_bp
 from routes.entries import entries_bp
+from routes.greed import greed_bp
 from db import *
 # from qr import *
 from emailer import send_email
@@ -23,6 +24,7 @@ app.register_blueprint(export_bp)
 app.register_blueprint(events_bp)
 app.register_blueprint(profile_bp)
 app.register_blueprint(entries_bp)
+app.register_blueprint(greed_bp)
 app.secret_key = 'hi'
 oauth.init_app(app)
 
@@ -368,10 +370,6 @@ def contactsub():
     log(f"{name} submitted Contact form: {msg}")
     return redirect('/contact')
 
-@app.route('/greed')
-def greed():
-    return render_template('greed.html',
-        user=session.get('userinfo'),)
 
 @app.route('/privacy')
 def privacy():
