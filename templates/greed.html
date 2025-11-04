@@ -33,26 +33,36 @@
         <h2>Greed control</h2>
         <h3 style="text-align:center">(just for fun)</h3>
 
-        <p>Rules: Pick a number from 1-30. The number of points you get is your number divided by 
-            number of players who picked that number.
-            Example: if you picked 24 and 2 other people also picked 24, you get 24/3=8 points.
-        </p>
+        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #2563eb;">
+            <p style="margin: 0;"><strong>Rules:</strong> Pick a number from 1-30. The number of points you get is your number divided by 
+                number of players who picked that number.
+                <br><em>Example: if you picked 24 and 2 other people also picked 24, you get 24/3=8 points.</em>
+            </p>
+        </div>
 
         {% if today_sub %}
-        <p>You already entered {{today_sub}} today. Come back tmrw for results...</p>
+        <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; border: 1px solid #4caf50; text-align: center;">
+            <p style="margin: 0; color: #2e7d32;"><strong>✓ You already entered {{today_sub}} today. Come back tmrw for results...</strong></p>
+        </div>
         {% else %}
-        <form onsubmit="event.preventDefault(); go();">
-            <label for="pick">Your pick (1-30): </label>
-            <input type="number" id="pick" name="pick" min="1" max="30" required>
-            <input type="submit" value="Submit">
+        <form onsubmit="event.preventDefault(); go();" style="background: #fff; padding: 20px; border: 2px solid #2563eb; border-radius: 8px; margin: 16px 0;">
+            <label for="pick" style="display: block; margin-bottom: 8px; font-weight: 600;">Your pick (1-30): </label>
+            <input type="number" id="pick" name="pick" min="1" max="30" required 
+                style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 12px;">
+            <input type="submit" value="Submit" 
+                style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
         </form>
         {% endif %}
 
-        <p>Current game will end at {{today}} @ 11:59pm</p>
-        <p>Yesterday's results: You got {{yday_pts}} points</p>
-        <p>(leaderboard coming soon)</p>
-        <br>
-        <p>(inspired by similar game on AoPS)</p>
+        <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border: 1px solid #ffc107; margin: 16px 0;">
+            <p style="margin: 4px 0;"><strong>⏰ Current game ends:</strong> {{today}} @ 11:59pm</p>
+            <p style="margin: 4px 0;"><strong>📊 Yesterday's results:</strong> You got {{yday_pts}} points</p>
+        </div>
+
+        <p style="text-align: center; font-style: italic; color: #666; margin-top: 24px;">
+            (leaderboard coming soon)<br>
+            <small>(inspired by similar game on AoPS)</small>
+        </p>
     </div>
 
     <!-- NAV BAR -->
