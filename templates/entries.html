@@ -102,14 +102,18 @@
     <h2>Past entries:</h2>
     <table id="past-table">
         <tr>
-            <th>Name (student ID)</th>
+            <th>Name (student ID)
+                <button id="sort-name-btn" aria-label="Sort by name" class="sort-btn">⇅</button>
+            </th>
             <th>Event
                 <button id="sort-event-btn" aria-label="Sort by event" class="sort-btn">⇅</button>
             </th>
             <th>Date</th>
             <th>Hours</th>
             <th>Doc</th>
-            <th>Decision</th>
+            <th>Decision
+                <button id="sort-dec-btn" aria-label="Sort by decision" class="sort-btn">⇅</button>
+            </th>
             <th style="min-width:60px;"></th>
         </tr>
         {% for entry in past_entries %}
@@ -223,8 +227,14 @@
         }
     }
 
+    document.getElementById('sort-name-btn').onclick = function() {
+        sort.call(this, 0);
+    };
     document.getElementById('sort-event-btn').onclick = function() {
         sort.call(this, 1);
+    };
+    document.getElementById('sort-dec-btn').onclick = function() {
+        sort.call(this, 5);
     };
     </script>
     <p style="text-align:center;">Load time: {{time}} s</p>
