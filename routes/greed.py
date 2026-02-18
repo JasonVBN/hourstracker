@@ -12,16 +12,20 @@ TIMEZONE = ZoneInfo('America/Chicago')
 
 @greed_bp.route('/greed')
 def greed():
-    today = datetime.now(TIMEZONE).date()
-    today_sub = get_sub(session.get('email'), today)
-    yday = today - timedelta(days=1)
-    yday_pts = calculate_points(session.get('email'), yday)
-    return render_template('greed.html',
-                           today=today,
-                           today_sub=today_sub,
-        user=session.get('userinfo'),
-        yday_pts=round(yday_pts,2),
-        )
+    try:
+        today = datetime.now(TIMEZONE).date()
+        today_sub = get_sub(session.get('email'), today)
+        yday = today - timedelta(days=1)
+        yday_pts = calculate_points(session.get('email'), yday)
+        return render_template('greed.html',
+                            today=today,
+                            today_sub=today_sub,
+            user=session.get('userinfo'),
+            yday_pts=round(yday_pts,2),
+            )
+    except Exception as e:
+        log(f"ERROR: {e}")
+        return render_template('error.html', error=str(e))
 
 @greed_bp.route('/greed/submit', methods=['POST'])
 def submit():
