@@ -54,8 +54,13 @@ def authorize():
     print(session['userinfo'])
 
     if session['userinfo'] is None:
+        # new user (not in DB yet)
+        # get info:
         return redirect('/admin/request')
     else:
+        if (session.get('checkin_redirect', 0) and
+                'checkin_event_id' in session):
+            return redirect(f"/checkin/{session['checkin_event_id']}")
         return redirect('/')
 
 @auth_bp.route('/logout')

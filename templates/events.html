@@ -74,7 +74,7 @@
             name: {{ event['name']|e|tojson }},
             hours: {{ event['hours']|e|tojson }},
             date: {{ event['date']|e|tojson }},
-            desc: {{ event['desc']|e|tojson }},
+            desc: {{ event['desc']|tojson }},
             proof: {{ 'true' if event.get('needproof') else 'false' }}
         };
         {% endfor %}
@@ -140,6 +140,20 @@
                 }
             }
         }
+
+        async function newEventSubmit(e) {
+            e.preventDefault();
+            const response = await fetch('/events/new', {
+                method: 'POST',
+                body: new FormData(document.getElementById('form-newevent'))
+            });
+            if (response.ok) {
+                window.location.reload(); // Refresh the page to reflect changes
+            } else {
+                const data = await response.json();
+                alert(data.err || 'Failed to create event :(');
+            }
+        }
     </script>
 </head>
 <body>
@@ -161,7 +175,7 @@
             </label>
 
             <label>Description: (optional)</label>
-            <textarea name="desc" rows="2" placeholder="description"></textarea>
+            <textarea name="desc" rows="3" placeholder="description"></textarea>
             
             <label>
             <input type="checkbox" name="needproof" value=1> Need proof
@@ -208,8 +222,8 @@
             <p>No events available.</p>
         {% endif %}
     </div>
-        
-    <form action="/events/new" method="post" hidden>
+
+    <form onsubmit="newEventSubmit(event)" id="form-newevent" method="post" hidden>
         <h2>Create new event:</h2>
         <label>Name:
         <input type="text" name="event_name" placeholder="Event Name" required>
@@ -236,7 +250,7 @@
         </label>
 
         <label>Description: (optional)</label>
-        <textarea name="desc" rows="2" placeholder="description"></textarea>
+        <textarea name="desc" rows="3" placeholder="description"></textarea>
         
         <label>
         <input type="checkbox" name="needproof" value=1> Need proof

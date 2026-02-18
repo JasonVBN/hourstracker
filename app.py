@@ -2,6 +2,10 @@ from flask import (Flask, render_template, redirect, url_for, jsonify,
                    session, request, make_response, send_from_directory)
 from routes.auth import auth_bp, oauth
 from routes.export import export_bp
+from routes.events import events_bp
+from routes.profile import profile_bp
+from routes.entries import entries_bp
+from routes.greed import greed_bp
 from db import *
 # from qr import *
 from emailer import send_email
@@ -9,6 +13,7 @@ import requests
 import uuid
 from log import log
 import time
+import threading
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -16,6 +21,10 @@ load_dotenv()
 app = Flask(__name__)
 app.register_blueprint(auth_bp)
 app.register_blueprint(export_bp)
+app.register_blueprint(events_bp)
+app.register_blueprint(profile_bp)
+app.register_blueprint(entries_bp)
+app.register_blueprint(greed_bp)
 app.secret_key = 'hi'
 oauth.init_app(app)
 
@@ -61,13 +70,20 @@ def index():
 # visited only via QR code
 @app.route('/checkin/<string:event_id>')
 def checkin(event_id):
+    log(f"checkin page visited by {session.get('email')}")
     if 'email' not in session or 'userinfo' not in session:
+        log('[checkin] not logged in, redirecting to /login')
+        session['checkin_redirect'] = True
         session['checkin_event_id'] = event_id
 
-        log(f"login from {request.headers.get('X-Forwarded-For')} (redirect to /checkin)")
-        redirect_uri = os.getenv('INDEX_URL') + 'checkin'
-        print(f'Redirect URI: {redirect_uri}')
-        return oauth.oidc.authorize_redirect(redirect_uri) # redirect to /checkin
+        # log(f"login from {request.headers.get('X-Forwarded-For')} (redirect to /checkin)")
+        # redirect_uri = os.getenv('INDEX_URL') + 'checkin'
+        # print(f'Redirect URI: {redirect_uri}')
+        # return oauth.oidc.authorize_redirect(redirect_uri) # redirect to /checkin
+
+        # return redirect('/login')
+
+        # user manually clicks 'login' to redirect to /login
     return render_template('checkin.html',
                             event=geteventbyid(event_id),
                             user=session.get('userinfo')
@@ -137,7 +153,7 @@ def pending_entries():
         return render_template("badboi.html")
     
     t1 = time.time()
-    pending_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status,
+    pending_list = runquery("""SELECT en.id, en.hours, en.mimetype, en.status, en.submit_time,
                             events.name AS event_name, events.date,
                             users.fname AS user_fname, users.lname AS user_lname, users.sid
                             FROM entries AS en
@@ -169,10 +185,13 @@ def approve_entry(id: int):
                 JOIN users ON users.id = entries.user_id
                 WHERE entries.id = %s""", (id,))[0]
     if info['notifs']:
-        send_email(info['email'],
+        thr = threading.Thread(target=send_email, args=(
+            info['email'],
             "Submission approved",
             f"""Your entry of {info['hours']} hours has been approved!
             (this is an automated message, but you can still reply)""")
+        )
+        thr.start()
     return redirect('/entries/pending')
 
 @app.route('/entries/deny/<int:id>')
@@ -185,60 +204,14 @@ def deny_entry(id: int):
                 JOIN users ON users.id = entries.user_id
                 WHERE entries.id = %s""", (id,))[0]
     if info['notifs']:
-        send_email(info['email'],
+        thr = threading.Thread(target=send_email, args=(
+            info['email'],
             "Submission denied",
             f"""Your entry of {info['hours']} hours has been denied :(
             (this is an automated message, but you can still reply)""")
+        )
+        thr.start()
     return redirect('/entries/pending')
-
-@app.route('/events')
-def events():
-    if ('email' not in session) or ('userinfo' not in session):
-        return redirect('/login')
-    if session['userinfo'].get('role') != 'admin' or session['userinfo'].get('status') != 'approved':
-        return render_template("badboi.html")
-    
-    log(f'events page visited by {session.get("email")}')
-    return render_template('events.html',
-                           events=getallevents(),
-    )
-
-@app.route('/events/new', methods=['POST'])
-def new_event():
-    name = request.form.get('event_name')
-    code = request.form.get('code') or None
-    hours = float(request.form.get('hours') or 0)
-    date = request.form.get('date') or None
-    desc = request.form.get('desc') or None
-    needproof = request.form.get('needproof') or 0
-    if not code:
-        code = str(uuid.uuid4())
-    addevent(code, name, hours, date, desc, needproof)
-    log(f'new event created by {session.get("email")}')
-    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} created event: {name}")
-    return redirect('/events')
-
-@app.route('/events/edit/<string:id>', methods=['POST'])
-def edit_event(id: str):
-    name = request.form.get('event_name')
-    hours = float(request.form.get('hours') or 0)
-    date = request.form.get('date') or None
-    desc = request.form.get('desc') or None
-    needproof = request.form.get('needproof') or 0
-
-    print(f"[app/edit_event] Editing event ID: {id}")
-    runquery("UPDATE events SET name = %s, hours = %s, date = %s, `desc` = %s, needproof = %s WHERE id = %s",
-             (name, hours, date, desc, needproof, id))
-    return redirect('/events')
-
-@app.route('/events/delete/<string:id>', methods=['POST'])
-def delete_event(id: str):
-    print(f"[app/delete_event] Deleting event ID: {id}")
-    name = runquery("SELECT name FROM events WHERE id = %s", (id,))[0]['name']
-    runquery("DELETE FROM entries WHERE event_id = %s", (id,))
-    runquery("DELETE FROM events WHERE id = %s", (id,))
-    auditlog(f"{session['userinfo']['fname']} {session['userinfo']['lname']} deleted event: {name}")
-    return {}, 200
 
 @app.route('/admin/accept/<int:id>')
 def accept(id: int):
@@ -287,21 +260,26 @@ def memberjoin():
     fname = request.form.get('fname')
     lname = request.form.get('lname')
     sid = request.form.get('sid')
+    grade = request.form.get('grade')
+    math_class = request.form.get('math_class')
 
     if not (fname and lname and sid):
         return jsonify({"error": "All fields are required"}), 400
 
     # is it safe to assume user still logged in?
-    runquery('''INSERT INTO users (email, fname, lname, sid, status, role) 
-            VALUES (%s, %s, %s, %s, 'approved', 'member')
+    runquery('''INSERT INTO users (email, fname, lname, sid, status, role, grade, mathclass) 
+            VALUES (%s, %s, %s, %s, 'approved', 'member', %s, %s)
             ON DUPLICATE KEY UPDATE
-            fname=VALUES(fname), lname=VALUES(lname), sid=VALUES(sid), status='approved', role='member' ''',
-              (session['email'], fname, lname, sid))
+            fname=VALUES(fname), lname=VALUES(lname), sid=VALUES(sid), status='approved', role='member', grade=VALUES(grade), mathclass=VALUES(mathclass)''',
+              (session['email'], fname, lname, sid, grade, math_class))
 
     userinfo = getuserinfo(session['email'])
     session['userinfo'] = userinfo
     print(f"User info after join: {session['userinfo']}")
     
+    if (session.get('checkin_redirect', 0) and
+            'checkin_event_id' in session):
+        return redirect(f"/checkin/{session['checkin_event_id']}")
     return redirect('/')
 
 @app.route('/roster')
@@ -351,6 +329,7 @@ def kickmember(id: int):
 def myprofile():
     if 'userinfo' not in session:
         return redirect('/login')
+    session['userinfo'] = getuserinfo(session['email'])
     return render_template('profile.html')
 
 @app.route('/profile/editbio', methods=['POST'])
@@ -358,7 +337,6 @@ def editbio():
     new_bio = request.form.get('bio')
     runquery("UPDATE users SET bio = %s WHERE email = %s", 
              (new_bio, session['email']))
-    session['userinfo'] = getuserinfo(session['email'])
     return redirect('/profile')
 
 @app.route('/profile/editnotif', methods=['POST'])
@@ -397,6 +375,7 @@ def contactsub():
     msg = request.form.get('message')
     log(f"{name} submitted Contact form: {msg}")
     return redirect('/contact')
+
 
 @app.route('/privacy')
 def privacy():

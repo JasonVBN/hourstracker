@@ -19,6 +19,7 @@ def runquery(query: str, params=None) -> list:
     try:
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor(dictionary=True)
+        cursor.execute("SET time_zone = 'America/Chicago';");
         cursor.execute(query, params)
         print(f"[db/runquery] Executed query: {query} with params: {params}")
         
@@ -131,6 +132,12 @@ def seetables():
 
 def auditlog(action: str):
     runquery("INSERT INTO log (action) VALUES (%s)", (action,))
+
+import secrets
+def shortuuid(length=6) -> str:
+    alph = "abcdefghijkmnpqrstuvwxyz23456789" 
+    #avoid ambiguous chars (o,0,l,1)
+    return ''.join(secrets.choice(alph) for _ in range(length))
 
 if __name__ == '__main__':
     seetables()

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="/static/navbar.css">
+    
+    <title>Greed Control</title>
+
+    <script>
+        async function go(){
+            const response = await fetch('/greed/submit', {
+                method: 'POST',
+                headers: {
+                    'method': 'POST'
+                },
+                body: new FormData(document.querySelector('form'))
+            });
+            if(!response.ok){
+                const data = await response.json();
+                alert("Something terribly wrong happened: " + data.msg);
+            } else {
+                alert("Submission recorded!");
+            }
+            location.reload();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Greed control</h2>
+        <h3 style="text-align:center">(just for fun)</h3>
+
+        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #2563eb;">
+            <p style="margin: 0;"><strong>Rules:</strong> Pick a number from 1-30. The number of points you get is your number divided by 
+                number of players who picked that number.
+                <br><em>Example: if you picked 24 and 2 other people also picked 24, you get 24/3=8 points.</em>
+            </p>
+        </div>
+
+        {% if today_sub %}
+        <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; border: 1px solid #4caf50; text-align: center;">
+            <p style="margin: 0; color: #2e7d32;"><strong>✓ You already entered {{today_sub}} today. Come back tmrw for results...</strong></p>
+        </div>
+        {% else %}
+        <form onsubmit="event.preventDefault(); go();" style="background: #fff; padding: 20px; border: 2px solid #2563eb; border-radius: 8px; margin: 16px 0;">
+            <label for="pick" style="display: block; margin-bottom: 8px; font-weight: 600;">Your pick (1-30): </label>
+            <input type="number" id="pick" name="pick" min="1" max="30" required 
+                style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 12px;">
+            <input type="submit" value="Submit" 
+                style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+        </form>
+        {% endif %}
+
+        <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border: 1px solid #ffc107; margin: 16px 0;">
+            <p style="margin: 4px 0;"><strong>⏰ Current game ends:</strong> {{today}} @ 11:59pm</p>
+            <p style="margin: 4px 0;"><strong>📊 Yesterday's results:</strong> You got {{yday_pts}} points</p>
+        </div>
+
+        <p style="text-align: center; font-style: italic; color: #666; margin-top: 24px;">
+            (leaderboard coming soon)<br>
+            <small>(inspired by similar game on AoPS)</small>
+        </p>
+    </div>
+
+    <!-- NAV BAR -->
+    <button id="nav-toggle" class="nav-toggle">☰</button>
+    <div id="navbar" class="navbar">
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            {% if user %}
+                <li><a href="/profile">Profile</a></li>
+                <li><a href="/logout">Logout</a></li>
+            {% else %}
+                <li><a href="/login">Log in / Register</a></li>
+            {% endif %}
+            <li class="current"><a href="/greed">Greed Control</a></li>
+        </ul>
+        {% if user['role']=='admin' and user['status']=='approved' %}
+        <ul class="nav-links">
+            <h2 class="nav-header">ADMIN ZONE:</h2>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/entries/pending">Pending Entries</a></li>
+            <li><a href="/roster">Roster</a></li>
+            <li><a href="/export">Export Data</a></li>
+            <li><a href="/auditlog">Audit Log</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    <script>
+    document.getElementById('nav-toggle').onclick = function() {
+        var navbar = document.getElementById('navbar');
+        navbar.classList.toggle('collapsed');
+        // Save state
+        localStorage.setItem('navbarCollapsed', navbar.classList.contains('collapsed') ? '1' : '0');
+    };
+    window.addEventListener('DOMContentLoaded', function() {
+        var navbar = document.getElementById('navbar');
+        if (localStorage.getItem('navbarCollapsed') === '1') {
+            navbar.classList.add('collapsed');
+        } else {
+            navbar.classList.remove('collapsed');
+        }
+    });
+    </script>
+    <!-- END OF NAV BAR -->
+</body>
+</html>

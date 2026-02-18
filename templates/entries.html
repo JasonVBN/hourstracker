@@ -6,6 +6,7 @@
     <title>Pending entries</title>
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/navbar.css">
+    <link rel="stylesheet" href="/static/sortbtn.css">
     <style>
         table {
             width: 70%;
@@ -34,6 +35,29 @@
         td {
             border-bottom: 1px solid #e5e7eb;
         }
+
+        .sort-btn {
+            color: white;
+        }
+        .dots-btn {
+            padding: 0;
+            margin: 0;
+            min-width: 16px;
+        }
+        .menu-btn {
+            background: none;
+            color: black;
+            margin:0;
+        }
+        .menu-btn:hover {
+            background: #f0f0f0;
+            color: black;
+            border-radius:0px;
+            margin:0;
+        }
+        .tr-active{
+            border: 2px solid #ff9b28;
+        }
     </style>
 </head>
 <body>
@@ -45,11 +69,12 @@
             <th>Date</th>
             <th>Hours</th>
             <th>Doc</th>
+            <th>Submitted</th>
             <th>Decision</th>
         </tr>
         {% for entry in pending_entries %}
             <tr>
-                <td>{{entry['user_fname']}} ({{entry['sid']}})</td>
+                <td>{{entry['user_fname']}} {{entry['user_lname']}} ({{entry['sid']}})</td>
                 <td>{{ entry['event_name'] }}</td>
                 <td>{{ entry['date'] }}</td>
                 <td>{{ entry['hours'] }}</td>
@@ -58,6 +83,7 @@
                         <a href="/entry/proof/{{entry['id']}}" target="_blank">See document</a>
                     {% endif %}
                 </td>
+                <td>{{ entry['submit_time'].strftime("%m/%d %H:%M:%S") }}</td>
                 <td>
                     <a class="btn" style="background-color: #60e542;" 
                         href="/entries/approve/{{ entry['id'] }}">approve</a>
@@ -68,20 +94,27 @@
         {% endfor %}
         {% if not pending_entries %}
             <tr>
-                <td colspan="5">No pending entries.</td>
+                <td colspan="7">No pending entries.</td>
             </tr>
         {% endif %}
     </table>
 
     <h2>Past entries:</h2>
-    <table>
+    <table id="past-table">
         <tr>
-            <th>Name (student ID)</th>
-            <th>Event</th>
+            <th>Name (student ID)
+                <button id="sort-name-btn" aria-label="Sort by name" class="sort-btn">⇅</button>
+            </th>
+            <th>Event
+                <button id="sort-event-btn" aria-label="Sort by event" class="sort-btn">⇅</button>
+            </th>
             <th>Date</th>
             <th>Hours</th>
             <th>Doc</th>
-            <th>Decision</th>
+            <th>Decision
+                <button id="sort-dec-btn" aria-label="Sort by decision" class="sort-btn">⇅</button>
+            </th>
+            <th style="min-width:60px;"></th>
         </tr>
         {% for entry in past_entries %}
             <tr>
@@ -102,9 +135,108 @@
                         <span style="color: red;">✘</span>
                     {% endif %}
                 </td>
+                <td style="position:relative;">
+                    <!-- 3 dots button opening a list with buttons "reconsider" and "delete"-->
+                    <button class="dots-btn" onclick="toggleMenu(this)" style="color:black; background:none; border:none; font-size:1.5em; cursor:pointer;">&#8942;</button>
+                    <!-- this dots-menu div must stay right after the button -->
+                    <div class="dots-menu" 
+                        style="display:none; position:absolute; right:0; top:80%; 
+                        background:#ffffff; border:2px dotted #777; box-shadow:0 2px 8px rgba(0,0,0,0.12); 
+                        z-index:10; min-width:120px;">
+                        <button class="menu-btn" onclick="reconsiderEntry({{ entry['id'] }})" style="width:100%;">Reconsider (make pending)</button>
+                        <button class="menu-btn" onclick="deleteEntry({{ entry['id'] }})" style="width:100%; color:#ff3d3d;">Delete</button>
+                    </div>
+                </td>
             </tr>
         {% endfor %}
     </table>
+    <script>
+    function toggleMenu(btn) {
+        // Hide any other open menus and remove row borders
+        document.querySelectorAll('.dots-menu').forEach(menu => {
+            if (menu !== btn.nextElementSibling) menu.style.display = 'none';
+            if (menu.closest('tr')) {
+                menu.closest('tr').classList.remove('tr-active');
+            }
+        });
+        // Toggle this menu
+        const menu = btn.nextElementSibling;
+        const row = btn.closest('tr');
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+            row.classList.remove('tr-active');
+        } else {
+            menu.style.display = 'block';
+            row.classList.add('tr-active');
+        }
+    }
+
+    // Optional: Hide menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.classList.contains('dots-btn')) {
+            document.querySelectorAll('.dots-menu').forEach(menu => {
+                menu.style.display = 'none';
+                if (menu.closest('tr')) {
+                    menu.closest('tr').classList.remove('tr-active');
+                }
+            });
+        }
+    });
+
+    async function reconsiderEntry(id) {
+        const response = await fetch('/entries/recon/' + id, {
+            method: 'POST'
+        });
+        if (response.ok) {
+            alert('Successfully moved entry ' + id + ' to pending.');
+            location.reload();
+        } else {
+            alert('Failed to reconsider entry ' + id);
+        }
+    }
+    async function deleteEntry(id) {
+        if (confirm('Confirm: Delete entry ' + id + '?')) {
+            const response = await fetch('/entries/delete/' + id, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                alert('Successfully deleted entry ' + id);
+                location.reload();
+            } else {
+                alert('Failed to delete entry ' + id);
+            }
+        }
+    }
+    function sort(colIndex){
+        const table = document.getElementById('past-table');
+        const rows = Array.from(table.querySelectorAll('tr')).slice(1); // skip header
+        let asc = this.dataset.asc === "true" ? false : true;
+        this.dataset.asc = asc;
+
+        rows.sort((a, b) => {
+            const nameA = a.cells[colIndex].textContent.trim().toLowerCase();
+            const nameB = b.cells[colIndex].textContent.trim().toLowerCase();
+            if (nameA < nameB) return asc ? -1 : 1;
+            if (nameA > nameB) return asc ? 1 : -1;
+            return 0;
+        });
+
+        // Re-append sorted rows
+        for (const row of rows) {
+            table.appendChild(row);
+        }
+    }
+
+    document.getElementById('sort-name-btn').onclick = function() {
+        sort.call(this, 0);
+    };
+    document.getElementById('sort-event-btn').onclick = function() {
+        sort.call(this, 1);
+    };
+    document.getElementById('sort-dec-btn').onclick = function() {
+        sort.call(this, 5);
+    };
+    </script>
     <p style="text-align:center;">Load time: {{time}} s</p>
 
     <!-- NAV BAR -->

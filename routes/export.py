@@ -77,21 +77,25 @@ def updategdrive():
         gc = pygsheets.authorize(service_file=os.getenv('SERVACCT_KEY'))
         spreadsheet = gc.open_by_key(os.getenv('GSHEET_ID'))
         
-        tab_title = f'Ver. {datetime.now().strftime("%b%d %H:%M")}'
+        # tab_title = f'Ver. {datetime.now().strftime("%b%d %H:%M")}'
+        TAB_TITLE = "main"
+        tab = None
         try:
-            existing_tab = spreadsheet.worksheet_by_title(tab_title)
-            spreadsheet.del_worksheet(existing_tab)
-            print(f"Deleted existing tab: {existing_tab.title}")
-        except:
-            pass
-        tab = spreadsheet.add_worksheet(tab_title)
+            tab = spreadsheet.worksheet_by_title(TAB_TITLE)
+            tab.clear()
+            print(f"Cleared existing tab '{TAB_TITLE}'")
+        except Exception as e:
+            print(e)
+            tab = spreadsheet.add_worksheet(TAB_TITLE)
+            print(f"Created new tab: {tab.title}")
         tab.index = 0  # Move new tab to left
-        print(f"Created tab: {tab.title} at {tab.url}")
 
         events = runquery('''SELECT id, name, date
                         FROM events''')
 
-        rows = []
+        topline = f"""Last updated from HoursWizard: {datetime.now().strftime('%b%d %H:%M')}.
+        Note: direct updates to this spreadsheet will be overwritten. To manually add hours, go to https://hourswizard.com > Roster"""
+        rows = [ [topline] ]
 
         columnidx = {}
         r1 = ["First Name", "Last Name", "Student ID", "Email", "TOTAL HOURS"]
@@ -125,12 +129,22 @@ def updategdrive():
         for uid in data:
             rows.append(['' if x==0 else x for x in data[uid]])
 
+        '''FORMAT:
+        - notes
+        - headers (First Name, Last Name, ..., [events])
+        - event dates
+        - [data rows]
+        '''
+
         # tab.append_table(rows, start='A1', dimension='ROWS', end=None)
-        next_row = 1
-        for row in rows:
-            tab.insert_rows(row=next_row, number=1, values=row)
-            next_row += 1
+        # next_row = 0
+        # for row in rows:
+        #     tab.insert_rows(row=next_row, number=1, values=row)
+        #     next_row += 1
         # very slow rn - needs optimization
+
+        tab.update_values('A1', rows) #much faster!
+        tab.merge_cells(start='A1', end='H1', merge_type='MERGE_ALL')
 
         return {}, 200
     except Exception as e:
