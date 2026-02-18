@@ -1,16 +1,29 @@
+html, body {
+    height: 100%; /*make body take up full height, no weird space under footer*/
+}
+
 body {
+    display: flex;
+    flex-direction: column;
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f6f8fa;
     margin: 0;
     padding: 0px;
 }
+
 .container, .newevent, form {
     background: #fff;
     max-width: 500px;
+    width: 90%;
     margin: 40px auto;
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+}
+@media (max-width: 600px){ /*for phones*/
+    .container, form{
+        width:fit-content;
+    }
 }
 h2, h3 {
     color: #2563eb;
@@ -74,4 +87,13 @@ a.btn.green{
 }
 a.btn.communist{
     background-color: #ff7a7a;
+}
+
+footer{
+    width:100%; 
+    text-align:center; 
+    margin-top:auto;
+    background-color:rgb(199, 199, 199); 
+    padding:20px 0;
+    height:100%;
 }

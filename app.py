@@ -44,13 +44,19 @@ def index():
                       GROUP BY status''',
              (session['userinfo']['id'],))
     
-    return render_template('index.html',
+        return render_template('index.html',
+                            user=session.get('userinfo'),
+                            allusers=getallusers(),
+                            events=getallevents(),
+                            queryresults=res,
+                            totals={x['status']: x['total'] for x in totals}
+        )
+    else:
+        return render_template('index.html',
                            user=session.get('userinfo'),
-                           allusers=getallusers(),
-                           events=getallevents(),
                            queryresults=res,
                            totals={x['status']: x['total'] for x in totals}
-    )
+        )
 
 # visited only via QR code
 @app.route('/checkin/<string:event_id>')
