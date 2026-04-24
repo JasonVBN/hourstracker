@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/events.css">
     <link rel="stylesheet" href="/static/navbar.css">
+    <link rel="stylesheet" href="/static/sortbtn.css">
     <style>
         .popup-bg {
             position: fixed;
@@ -194,10 +195,10 @@
     <div class="container" style="max-width: 75%;">
         <h2>Events:</h2>
         {% if events %}
-            <table style="width:100%; border-collapse:collapse;">
+            <table id="events-table" style="width:100%; border-collapse:collapse;">
                 <tr>
                     <th>Name</th>
-                    <th>Date</th>
+                    <th>Date <button id="sort-date-btn" class="sort-btn" data-order="desc" title="Sort by date">⇅</button></th>
                     <th>Hours</th>
                     <th>Status</th>
                     <th>QR code</th>
@@ -293,7 +294,64 @@
         } else {
             navbar.classList.remove('collapsed');
         }
+        // Attach Date sort button handler
+        const sortBtn = document.getElementById('sort-date-btn');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const order = this.getAttribute('data-order') === 'asc' ? 'desc' : 'asc';
+                this.setAttribute('data-order', order);
+                this.textContent = order === 'asc' ? '↑' : '↓';
+                sortTableByDate(order);
+            });
+        }
     });
+    </script>
+    <script>
+    // Client-side sort for events table by Date column (index 1)
+    function parseDateValue(text) {
+        if (!text) return null;
+        text = text.trim();
+        if (!text) return null;
+        // Try to parse ISO-like dates first
+        const t = Date.parse(text);
+        if (!isNaN(t)) return t;
+        // Fallback: try to extract yyyy-mm-dd within string
+        const m = text.match(/(\d{4}-\d{2}-\d{2})/);
+        if (m) {
+            const tt = Date.parse(m[1]);
+            if (!isNaN(tt)) return tt;
+        }
+        return null;
+    }
+
+    function sortTableByDate(order) {
+        const table = document.getElementById('events-table');
+        if (!table) return;
+        // Collect body rows (exclude header row)
+        const rows = Array.from(table.querySelectorAll('tr')).filter(r => r.querySelector('td'));
+        const mapped = rows.map(r => {
+            const cell = r.cells[1];
+            const txt = cell ? cell.textContent || '' : '';
+            const ts = parseDateValue(txt);
+            return { row: r, ts: ts };
+        });
+
+        mapped.sort((a, b) => {
+            const aNull = a.ts === null;
+            const bNull = b.ts === null;
+            // Place nulls at the end regardless of order
+            if (aNull && bNull) return 0;
+            if (aNull) return 1;
+            if (bNull) return -1;
+            // Both have timestamps
+            return order === 'asc' ? a.ts - b.ts : b.ts - a.ts;
+        });
+
+        // Re-append rows in sorted order
+        const tbody = table; // table contains rows directly
+        mapped.forEach(m => tbody.appendChild(m.row));
+    }
     </script>
     <!-- END OF NAV BAR -->
 </body>
