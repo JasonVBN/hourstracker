@@ -82,10 +82,17 @@
             <form action="/entry" method="post" enctype="multipart/form-data" id="attendance-form">
                 <select name="event_id" id="event-select" required>
                     <option value="" disabled selected>Select an event</option>
-                    {% for e in events %}
+                    {# First, show events that have a date, sorted by date desc (newest first) #}
+                    {% for e in events | selectattr('date') | sort(attribute='date', reverse=true) %}
                         <option value="{{ e['id'] }}" data-needproof="{{ e['needproof']|int }}" data-hours="{{ e['hours']|float }}">
-                            {{ e['name'] }} 
-                            {% if e['date'] %} ({{ e['date']}}) {% endif %}
+                            {{ e['name'] }}
+                            {% if e['date'] %} ({{ e['date'] }}) {% endif %}
+                        </option>
+                    {% endfor %}
+                    {# Then show events without a date at the bottom #}
+                    {% for e in events | rejectattr('date') %}
+                        <option value="{{ e['id'] }}" data-needproof="{{ e['needproof']|int }}" data-hours="{{ e['hours']|float }}">
+                            {{ e['name'] }}
                         </option>
                     {% endfor %}
                 </select>
